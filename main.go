@@ -1,8 +1,8 @@
 package main
 
 import (
-	"github.com/davecgh/go-spew/spew"
-	"github.com/robertkrimen/otto/parser"
+	// "github.com/davecgh/go-spew/spew"
+	// "github.com/robertkrimen/otto/parser"
 )
 
 func main() {
@@ -22,6 +22,7 @@ func main() {
 `
 
 	// Parse some JavaScript, yielding a *ast.Program and/or an ErrorList
+    parser  = JavaScriptParserBase
 	program, _ := parser.ParseFile(nil, filename, src, 0)
 	spew.Dump(program)
 }
