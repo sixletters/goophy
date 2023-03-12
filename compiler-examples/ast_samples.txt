@@ -1,0 +1,178 @@
+"case: 1;"
+"AST:"
+["literal", [1, null]]
+"-------------------"
+"case: 2 + 3;"
+"AST:"
+[ "binary_operator_combination",
+["+", [["literal", [2, null]], [["literal", [3, null]], null]]]]
+"-------------------"
+"case: 1; 2; 3;"
+"AST:"
+[ "sequence",
+[ [["literal", [1, null]], [["literal", [2, null]], [["literal", [3, null]], null]]],
+null]]
+"-------------------"
+"case: false ? 2 : 3;"
+"AST:"
+[ "conditional_expression",
+[ ["literal", [false, null]],
+[["literal", [2, null]], [["literal", [3, null]], null]]]]
+"-------------------"
+"case: 8 + 34; true ? 1 + 2 : 17;"
+"AST:"
+[ "sequence",
+[ [ [ "binary_operator_combination",
+    ["+", [["literal", [8, null]], [["literal", [34, null]], null]]]],
+  [ [ "conditional_expression",
+    [ ["literal", [true, null]],
+    [ [ "binary_operator_combination",
+      ["+", [["literal", [1, null]], [["literal", [2, null]], null]]]],
+    [["literal", [17, null]], null]]]],
+  null]],
+null]]
+"-------------------"
+"case: \nconst y = 4; \n{\n    const x = y + 7; \n    x * 2;\n}\n"
+"AST:"
+[ "sequence",
+[ [ ["constant_declaration", [["name", ["y", null]], [["literal", [4, null]], null]]],
+  [ [ "block",
+    [ [ "sequence",
+      [ [ [ "constant_declaration",
+          [ ["name", ["x", null]],
+          [ [ "binary_operator_combination",
+            ["+", [["name", ["y", null]], [["literal", [7, null]], null]]]],
+          null]]],
+        [ [ "binary_operator_combination",
+          ["*", [["name", ["x", null]], [["literal", [2, null]], null]]]],
+        null]],
+      null]],
+    null]],
+  null]],
+null]]
+"-------------------"
+"case: \nfunction f() {\n    return 1;\n}\nf();\n"
+"AST:"
+[ "sequence",
+[ [ [ "function_declaration",
+    [ ["name", ["f", null]],
+    [null, [["return_statement", [["literal", [1, null]], null]], null]]]],
+  [["application", [["name", ["f", null]], [null, null]]], null]],
+null]]
+"-------------------"
+"case: \nfunction f(x) {\n    return x;\n}\nf(33);\n"
+"AST:"
+[ "sequence",
+[ [ [ "function_declaration",
+    [ ["name", ["f", null]],
+    [ [["name", ["x", null]], null],
+    [["return_statement", [["name", ["x", null]], null]], null]]]],
+  [ ["application", [["name", ["f", null]], [[["literal", [33, null]], null], null]]],
+  null]],
+null]]
+"-------------------"
+"case: \nfunction f(x, y) {\n    return x - y;\n}\nf(33, 22);\n"
+"AST:"
+[ "sequence",
+[ [ [ "function_declaration",
+    [ ["name", ["f", null]],
+    [ [["name", ["x", null]], [["name", ["y", null]], null]],
+    [ [ "return_statement",
+      [ [ "binary_operator_combination",
+        ["-", [["name", ["x", null]], [["name", ["y", null]], null]]]],
+      null]],
+    null]]]],
+  [ [ "application",
+    [ ["name", ["f", null]],
+    [[["literal", [33, null]], [["literal", [22, null]], null]], null]]],
+  null]],
+null]]
+"-------------------"
+"case: \nfunction fact(n) {\n    return n === 1 ? 1 : n * fact(n - 1);\n}\nfact(10);\n"
+"AST:"
+[ "sequence",
+[ [ [ "function_declaration",
+    [ ["name", ["fact", null]],
+    [ [["name", ["n", null]], null],
+    [ [ "return_statement",
+      [ [ "conditional_expression",
+        [ [ "binary_operator_combination",
+          ["===", [["name", ["n", null]], [["literal", [1, null]], null]]]],
+        [ ["literal", [1, null]],
+        [ [ "binary_operator_combination",
+          [ "*",
+          [ ["name", ["n", null]],
+          [ [ "application",
+            [ ["name", ["fact", null]],
+            [ [ [ "binary_operator_combination",
+                ["-", [["name", ["n", null]], [["literal", [1, null]], null]]]],
+              null],
+            null]]],
+          null]]]],
+        null]]]],
+      null]],
+    null]]]],
+  [ [ "application",
+    [["name", ["fact", null]], [[["literal", [10, null]], null], null]]],
+  null]],
+null]]
+"-------------------"
+"case: error(1); 2;"
+"AST:"
+[ "sequence",
+[ [ [ "application",
+    [["name", ["error", null]], [[["literal", [1, null]], null], null]]],
+  [["literal", [2, null]], null]],
+null]]
+"-------------------"
+"case: error(1 + 2); 4;"
+"AST:"
+[ "sequence",
+[ [ [ "application",
+    [ ["name", ["error", null]],
+    [ [ [ "binary_operator_combination",
+        ["+", [["literal", [1, null]], [["literal", [2, null]], null]]]],
+      null],
+    null]]],
+  [["literal", [4, null]], null]],
+null]]
+"-------------------"
+"case: \nfunction fact(n) {\n    return fact_iter(n, 1, 1);\n}\nfunction fact_iter(n, i, acc) {\n    return i > n\n           ? error(100)\n           : fact_iter(n, i + 1, acc * i);\n}\nfact(4);\n"
+"AST:"
+[ "sequence",
+[ [ [ "function_declaration",
+    [ ["name", ["fact", null]],
+    [ [["name", ["n", null]], null],
+    [ [ "return_statement",
+      [ [ "application",
+        [ ["name", ["fact_iter", null]],
+        [ [["name", ["n", null]], [["literal", [1, null]], [["literal", [1, null]], null]]],
+        null]]],
+      null]],
+    null]]]],
+  [ [ "function_declaration",
+    [ ["name", ["fact_iter", null]],
+    [ [["name", ["n", null]], [["name", ["i", null]], [["name", ["acc", null]], null]]],
+    [ [ "return_statement",
+      [ [ "conditional_expression",
+        [ [ "binary_operator_combination",
+          [">", [["name", ["i", null]], [["name", ["n", null]], null]]]],
+        [ [ "application",
+          [["name", ["error", null]], [[["literal", [100, null]], null], null]]],
+        [ [ "application",
+          [ ["name", ["fact_iter", null]],
+          [ [ ["name", ["n", null]],
+            [ [ "binary_operator_combination",
+              ["+", [["name", ["i", null]], [["literal", [1, null]], null]]]],
+            [ [ "binary_operator_combination",
+              ["*", [["name", ["acc", null]], [["name", ["i", null]], null]]]],
+            null]]],
+          null]]],
+        null]]]],
+      null]],
+    null]]]],
+  [ [ "application",
+    [["name", ["fact", null]], [[["literal", [4, null]], null], null]]],
+  null]]],
+null]]
+"-------------------"
