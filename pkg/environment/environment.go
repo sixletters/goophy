@@ -33,7 +33,7 @@ func (env *EnvironmentStack) Extend() {
 }
 
 func (env *EnvironmentStack) Pop() {
-	env.stackFrames = env.stackFrames[:len(env.stackFrames)-2]
+	env.stackFrames = env.stackFrames[:len(env.stackFrames)-1]
 }
 
 func (env *EnvironmentStack) Set(varName string, value interface{}) {
