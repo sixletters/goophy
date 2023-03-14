@@ -1,0 +1,78 @@
+package machine
+
+import(
+	"reflect"
+	// "fmt"
+)
+
+var unop_microcode = map[string]func(interface{}) interface{}{
+    "-unary": func(x interface{}) interface{} {
+        switch x.(type) {
+        case int:
+            return -x.(int)
+        case float64:
+            return -x.(float64)
+        default:
+            return nil // return an error message or value here
+        }
+    },
+	"!": func(x interface{}) interface{} {
+        if ok := isBool(x); ok {
+            return !x.(bool)
+        }
+        return nil // return an error message or value here
+	},
+
+}
+
+var binop_microcode = map[string]func(x, y interface{}) interface{}{
+	"+": func(x, y interface{}) interface{} {
+		if x==nil || y == nil{
+			return nil
+		}
+		if (isNumber(x) && isNumber(y)) {
+			switch x.(type) {
+			case int:
+				return x.(int) + y.(int)
+			case float64:
+				return x.(float64) + y.(float64)
+			}
+		} else if (isString(x) && isString(y)) {
+			return x.(string) + y.(string)
+		}
+		return "error: + expects two numbers or two strings, got:" + 
+			reflect.TypeOf(x).String() + " and " + 
+			reflect.TypeOf(y).String()
+	},
+	
+    "*": func(x, y interface{}) interface{} {
+        return x.(float64) * y.(float64)
+    },
+    "-": func(x, y interface{}) interface{} {
+        return x.(float64) - y.(float64)
+    },
+    "/": func(x, y interface{}) interface{} {
+        return x.(float64) / y.(float64)
+    },
+    "%": func(x, y interface{}) interface{} {
+        return int(x.(float64)) % int(y.(float64))
+    },
+    "<": func(x, y interface{}) interface{} {
+        return x.(float64) < y.(float64)
+    },
+    "<=": func(x, y interface{}) interface{} {
+        return x.(float64) <= y.(float64)
+    },
+    ">=": func(x, y interface{}) interface{} {
+        return x.(float64) >= y.(float64)
+    },
+    ">": func(x, y interface{}) interface{} {
+        return x.(float64) > y.(float64)
+    },
+    "==": func(x, y interface{}) interface{} {
+        return x == y
+    },
+    "!=": func(x, y interface{}) interface{} {
+        return x != y
+    },
+}
