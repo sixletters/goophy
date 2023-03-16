@@ -89,46 +89,129 @@ var instrs []Instruction
 // wc: write counter
 var wc = 0
 
-// The base Node interface
-type Node interface {
-	TagLiteral() string
-	String() string
-}
-
 type Instruction interface {
-	Node
-	instructionNode()
+	getTag()
+	// instructionNode()
 }
 
 type Instructions struct {
 	instrs []Instruction
 }
 
-type LDCInstruction struct {
-	Instruction
-	Tag Tag // the LDC tag
+// LDC ->Boolean
+type LDCBInstruction struct {
+	tag string
+	val bool
 }
 
-func (ldc *LDCInstruction) instructionNode()   {}
-func (ldc *LDCInstruction) TagLiteral() string { return ldc.Tag.Literal }
-func (ldc *LDCInstruction) String() string     { return ldc.Tag.Literal }
+func (ldcb *LDCBInstruction) getTag() string {
+	return ldcb.tag
+} 
 
-type LDInstruction struct {
-	Instruction
-	Tag Tag // the LD Symbolic tag
+func (ldcb *LDCBInstruction) getValue() bool {
+	return ldcb.val
+} 
+
+// LDC ->Integer TODO: Expand to handle other types like float64
+type LDCNInstruction struct {
+	tag string
+	val int
+}
+func (ldcn *LDCNInstruction) getTag() string {
+	return ldcn.tag
 }
 
-func (ld *LDInstruction) instructionNode()   {}
-func (ld *LDInstruction) TagLiteral() string { return ld.Tag.Literal }
-func (ld *LDInstruction) String() string     { return ld.Tag.Literal }
+func (ldcn *LDCNInstruction) getValue() int {
+	return ldcn.val
+} 
+
+type LDSInstruction struct {
+	tag string
+	sym string
+}
+
+func (lds *LDSInstruction) getTag() string {
+	return lds.tag
+}
+
+func (lds *LDSInstruction) getSym() string {
+	return lds.sym
+} 
 
 type DONEInstruction struct {
-	Tag Tag // the DONE tag
+	tag string
 }
 
-func (done *DONEInstruction) instructionNode()   {}
-func (done *DONEInstruction) TagLiteral() string { return done.Tag.Literal }
-func (done *DONEInstruction) String() string     { return done.Tag.Literal }
+func (done *DONEInstruction) getTag() string {
+	return done.tag
+}
+
+type UNOPInstruction struct {
+	tag string
+	sym string
+}
+
+func (unop *UNOPInstruction) getTag() string {
+	return unop.tag
+}
+
+func (unop *UNOPInstruction) getSym() string {
+	return unop.sym
+}
+
+type UNOP string
+
+const(
+	negative  UNOP = "-unary"
+	not UNOP  = "!"
+)
+
+type UNOPInstruction struct {
+	tag string
+	sym UNOP
+}
+
+func (unop *UNOPInstruction) getTag() string {
+	return unop.tag
+}
+
+func (unop *UNOPInstruction) getSym() UNOP {
+	return unop.sym
+}
+type BINOP string
+const (
+	add      BINOP = "+"
+	multiply BINOP = "*"
+	minus    BINOP = "-"
+	divide   BINOP = "/"
+	modulo   BINOP = "%"
+	lt       BINOP = "<"
+	le       BINOP = "<="
+	ge       BINOP = ">="
+	gt       BINOP = ">"
+	eq       BINOP = "==="
+	neq      BINOP = "!=="
+)
+
+type BINOPInstruction struct {
+	tag string
+	sym BINOP
+}
+
+func (binop *BINOPInstruction) getTag() string {
+	return binop.tag
+}
+
+func (binop *BINOPInstruction) getSym() BINOP {
+	return binop.sym
+}
+
+type POPInstruction struct {
+	tag string
+}
+func (pop *POPInstruction) getTag() string {
+	return pop.tag
+}
 
 // switch cases
 func compile_comp(token Token, statement Statement) {
