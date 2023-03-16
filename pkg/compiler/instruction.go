@@ -110,3 +110,108 @@ type POPInstruction struct {
 func (pop *POPInstruction) getTag() string {
 	return pop.tag
 }
+
+type JOFInstruction struct {
+	tag  string
+	addr int
+}
+
+func (jof *JOFInstruction) getTag() string {
+	return jof.tag
+}
+func (jof *JOFInstruction) getAddr() int {
+	return jof.addr
+}
+
+// GOTO Absolute
+type GOTOInstruction struct {
+	tag  string
+	addr int
+}
+
+func (gotoa *GOTOInstruction) getTag() string {
+	return gotoa.tag
+}
+
+func (gotoa *GOTOInstruction) getAddr() int {
+	return gotoa.addr
+}
+
+// Enter Scope
+type ENTERSCOPEInstruction struct {
+	tag  string
+	syms []string
+}
+
+func (enterScope *ENTERSCOPEInstruction) getTag() string {
+	return enterScope.tag
+}
+
+func (enterScope *ENTERSCOPEInstruction) getSyms() []string {
+	return enterScope.syms
+}
+
+// Exit Scope
+type EXITSCOPEInstruction struct {
+	tag string
+}
+
+func (exitScope *EXITSCOPEInstruction) getTag() string {
+	return exitScope.tag
+}
+
+// LoaD Function
+type LDFInstruction struct {
+	tag  string
+	prms []string
+	addr int
+}
+
+func (ldf *LDFInstruction) getTag() string {
+	return ldf.tag
+}
+
+func (ldf *LDFInstruction) getPrms() []string {
+	return ldf.prms
+}
+
+func (ldf *LDFInstruction) getAddr() int {
+	return ldf.addr
+}
+
+// CALL
+type CALLInstruction struct {
+	tag   string
+	arity int
+}
+
+func (call *CALLInstruction) getTag() string {
+	return call.tag
+}
+
+func (call *CALLInstruction) getArity() int {
+	return call.arity
+}
+
+// TAIL_CALL special case where we dont push onto RTS
+type TAILCALLInstruction struct {
+	tag   string
+	arity int
+}
+
+func (tailCall *TAILCALLInstruction) getTag() string {
+	return tailCall.tag
+}
+
+func (tailCall *TAILCALLInstruction) getArity() int {
+	return tailCall.arity
+}
+
+// RESET
+type RESETInstruction struct {
+	tag string
+}
+
+func (reset *RESETInstruction) getTag() string {
+	return reset.tag
+}
