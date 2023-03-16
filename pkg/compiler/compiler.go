@@ -148,52 +148,52 @@ func (done *DONEInstruction) getTag() string {
 	return done.tag
 }
 
-type UNOP string
+type UNOPS string
 
 const (
-	negative UNOP = "-unary"
-	not      UNOP = "!"
+	negative UNOPS = "-unary"
+	not      UNOPS = "!"
 )
 
 type UNOPInstruction struct {
 	tag string
-	sym UNOP
+	sym UNOPS
 }
 
 func (unop *UNOPInstruction) getTag() string {
 	return unop.tag
 }
 
-func (unop *UNOPInstruction) getSym() UNOP {
+func (unop *UNOPInstruction) getSym() UNOPS {
 	return unop.sym
 }
 
-type BINOP string
+type BINOPS string
 
 const (
-	add      BINOP = "+"
-	multiply BINOP = "*"
-	minus    BINOP = "-"
-	divide   BINOP = "/"
-	modulo   BINOP = "%"
-	lt       BINOP = "<"
-	le       BINOP = "<="
-	ge       BINOP = ">="
-	gt       BINOP = ">"
-	eq       BINOP = "==="
-	neq      BINOP = "!=="
+	add      BINOPS = "+"
+	multiply BINOPS = "*"
+	minus    BINOPS = "-"
+	divide   BINOPS = "/"
+	modulo   BINOPS = "%"
+	lt       BINOPS = "<"
+	le       BINOPS = "<="
+	ge       BINOPS = ">="
+	gt       BINOPS = ">"
+	eq       BINOPS = "==="
+	neq      BINOPS = "!=="
 )
 
 type BINOPInstruction struct {
 	tag string
-	sym BINOP
+	sym BINOPS
 }
 
 func (binop *BINOPInstruction) getTag() string {
 	return binop.tag
 }
 
-func (binop *BINOPInstruction) getSym() BINOP {
+func (binop *BINOPInstruction) getSym() BINOPS {
 	return binop.sym
 }
 
