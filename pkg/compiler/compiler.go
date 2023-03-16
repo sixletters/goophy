@@ -83,9 +83,6 @@ var builtin_mapping = map[string] func() {
 	"tokenize":  tokenize(),
 }*/
 
-// instrs: instruction array
-var instrs []Instruction
-
 // wc: write counter
 var wc = 0
 
@@ -96,6 +93,14 @@ type Instruction interface {
 
 type Instructions struct {
 	instrs []Instruction
+}
+
+func (instrs *Instructions) getInstrs() []Instruction {
+	return instrs.instrs
+}
+
+func (instrs *Instructions) addInstrs(instruction Instruction, wc int) {
+	instrs.instrs = append(instrs.instrs, instruction)
 }
 
 // LDC ->Boolean
@@ -420,12 +425,16 @@ func compile_comp(token Token, statement Statement) {
 // finish with a done instruction
 func compile(statement Statement) {
 	compile_comp(statement.tokenType, statement)
-	doneInstruction := DONEInstruction{Tag: NewTag("DONE", statement.Node.String())}
-	instrs[wc] = doneInstruction
+	instruction := []Instruction{
+		&DONEInstruction{
+			tag: "DONE",
+		},
+	}
+	Instructions.getInstrs() = append(Instructions.getInstrs(), instruction)
 }
 
 func compileProgram(program ast.Program) {
 	wc := 0
-	instrs := make([]Instructions, 1000)
+	Instructions.instrs = make([]Instruction, 1000)
 	compile(program.Statements[wc])
 }
