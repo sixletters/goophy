@@ -20,12 +20,19 @@ var E EnvironmentFrame
 var PC int
 
 // Microcode
-var microcode = map[string]func(Instruction){
-    "LDC": func(instr Instruction) {
+// var microcode = map[string]func(Instruction){
+//     "LDC": func(instr Instruction) {
+//         PC++
+// 		OS.Push(instr.val)
+//     },
+var microcode = map[string]func(map[string]interface{}){
+    "LDC": func(instr map[string]interface{}) {
         PC++
-		OS.Push(instr.val)
+        OS.Push(instr["val"])
     },
-    // "UNOP": func(instr *Instruction) {
+}
+
+    // "UNOP": func(instr Instruction) {
     //     PC++
 	// 	OS.Push(apply_unop(instr.sym, OS.Pop()))
     // },
@@ -110,18 +117,18 @@ var microcode = map[string]func(Instruction){
     //         }
     //     }
     // },
-}
+// }
 
 //TODO: Finalize struct for instruction
-type Instruction struct{
-	tag string
-	val interface{}
-	// sym string
-}
+// type Instruction struct{
+// 	tag string
+// 	val interface{}
+// 	// sym string
+// }
 
 // TODO: Check allowable types for return
 // func run(instrs) interface{} {
-func run(instrs []Instruction) interface{} {
+func run(instrs[]map[string]interface{}) interface{} {
 	// global_environment := NewEnvironmentStack()
 	// global_environment.Extend()
     OS = Stack{}
@@ -135,9 +142,10 @@ func run(instrs []Instruction) interface{} {
 	// 	{"DONE",0},
 	// }
 
-    for instrs[PC].tag != "DONE" {
+    for instrs[PC]["tag"] != "DONE" {
         instr := instrs[PC]
-        microcode[instr.tag](instr)
+        // fmt.Println(instr)
+        microcode[instr["tag"].(string)](instr)
     }
 	// fmt.Println(instrs[0])
     return OS.Peek()

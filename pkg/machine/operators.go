@@ -76,3 +76,12 @@ var binop_microcode = map[string]func(x, y interface{}) interface{}{
         return x != y
     },
 }
+
+func apply_binop(op string, v2 interface{}, v1 interface{}) interface{} {
+    return binop_microcode[op](v1, v2)
+}
+
+func apply_unop(op string, v interface{}) interface{} {
+	return unop_microcode[op](v)
+}
+
