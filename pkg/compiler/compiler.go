@@ -90,7 +90,7 @@ var instrs []Instruction
 var wc = 0
 
 type Instruction interface {
-	getTag()
+	getTag() string
 	// instructionNode()
 }
 
@@ -144,19 +144,6 @@ type DONEInstruction struct {
 
 func (done *DONEInstruction) getTag() string {
 	return done.tag
-}
-
-type UNOPInstruction struct {
-	tag string
-	sym string
-}
-
-func (unop *UNOPInstruction) getTag() string {
-	return unop.tag
-}
-
-func (unop *UNOPInstruction) getSym() string {
-	return unop.sym
 }
 
 type UNOP string
