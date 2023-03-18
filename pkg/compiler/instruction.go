@@ -9,74 +9,86 @@ type Instructions struct {
 	instrs []Instruction
 }
 
+func (instrs Instructions) getInstrs() []Instruction {
+	return instrs.instrs
+}
+
+func (instrs Instructions) addInstrs(instruction Instruction, wc int) {
+	instrs.instrs = append(instrs.instrs, instruction)
+}
+
 // LDC ->Boolean
 type LDCBInstruction struct {
 	tag string
 	val bool
 }
 
-func (ldcb *LDCBInstruction) getTag() string {
+func (ldcb LDCBInstruction) getTag() string {
 	return ldcb.tag
-} 
+}
 
-func (ldcb *LDCBInstruction) getValue() bool {
+func (ldcb LDCBInstruction) getValue() bool {
 	return ldcb.val
-} 
+}
 
 // LDC ->Integer TODO: Expand to handle other types like float64
 type LDCNInstruction struct {
 	tag string
 	val int
 }
-func (ldcn *LDCNInstruction) getTag() string {
+
+func (ldcn LDCNInstruction) getTag() string {
 	return ldcn.tag
 }
 
-func (ldcn *LDCNInstruction) getValue() int {
+func (ldcn LDCNInstruction) getValue() int {
 	return ldcn.val
-} 
+}
 
+// LD Symbolic
 type LDSInstruction struct {
 	tag string
 	sym string
 }
 
-func (lds *LDSInstruction) getTag() string {
+func (lds LDSInstruction) getTag() string {
 	return lds.tag
 }
 
-func (lds *LDSInstruction) getSym() string {
+func (lds LDSInstruction) getSym() string {
 	return lds.sym
-} 
+}
 
 type DONEInstruction struct {
 	tag string
 }
 
-func (done *DONEInstruction) getTag() string {
+func (done DONEInstruction) getTag() string {
 	return done.tag
 }
 
 type UNOPS string
 
-const(
-	negative  UNOPS = "-unary"
-	not UNOPS  = "!"
+const (
+	negative UNOPS = "-unary"
+	not      UNOPS = "!"
 )
 
-type UNOPSInstruction struct {
+type UNOPInstruction struct {
 	tag string
 	sym UNOPS
 }
 
-func (unop *UNOPSInstruction) getTag() string {
+func (unop UNOPInstruction) getTag() string {
 	return unop.tag
 }
 
-func (unop *UNOPSInstruction) getSym() UNOPS {
+func (unop UNOPInstruction) getSym() UNOPS {
 	return unop.sym
 }
+
 type BINOPS string
+
 const (
 	add      BINOPS = "+"
 	multiply BINOPS = "*"
@@ -91,23 +103,24 @@ const (
 	neq      BINOPS = "!=="
 )
 
-type BINOPSInstruction struct {
+type BINOPInstruction struct {
 	tag string
 	sym BINOPS
 }
 
-func (binop *BINOPSInstruction) getTag() string {
+func (binop BINOPInstruction) getTag() string {
 	return binop.tag
 }
 
-func (binop *BINOPSInstruction) getSym() BINOPS {
+func (binop BINOPInstruction) getSym() BINOPS {
 	return binop.sym
 }
 
 type POPInstruction struct {
 	tag string
 }
-func (pop *POPInstruction) getTag() string {
+
+func (pop POPInstruction) getTag() string {
 	return pop.tag
 }
 
@@ -116,10 +129,10 @@ type JOFInstruction struct {
 	addr int
 }
 
-func (jof *JOFInstruction) getTag() string {
+func (jof JOFInstruction) getTag() string {
 	return jof.tag
 }
-func (jof *JOFInstruction) getAddr() int {
+func (jof JOFInstruction) getAddr() int {
 	return jof.addr
 }
 
@@ -129,11 +142,11 @@ type GOTOInstruction struct {
 	addr int
 }
 
-func (gotoa *GOTOInstruction) getTag() string {
+func (gotoa GOTOInstruction) getTag() string {
 	return gotoa.tag
 }
 
-func (gotoa *GOTOInstruction) getAddr() int {
+func (gotoa GOTOInstruction) getAddr() int {
 	return gotoa.addr
 }
 
@@ -143,11 +156,11 @@ type ENTERSCOPEInstruction struct {
 	syms []string
 }
 
-func (enterScope *ENTERSCOPEInstruction) getTag() string {
+func (enterScope ENTERSCOPEInstruction) getTag() string {
 	return enterScope.tag
 }
 
-func (enterScope *ENTERSCOPEInstruction) getSyms() []string {
+func (enterScope ENTERSCOPEInstruction) getSyms() []string {
 	return enterScope.syms
 }
 
@@ -156,7 +169,7 @@ type EXITSCOPEInstruction struct {
 	tag string
 }
 
-func (exitScope *EXITSCOPEInstruction) getTag() string {
+func (exitScope EXITSCOPEInstruction) getTag() string {
 	return exitScope.tag
 }
 
@@ -167,15 +180,15 @@ type LDFInstruction struct {
 	addr int
 }
 
-func (ldf *LDFInstruction) getTag() string {
+func (ldf LDFInstruction) getTag() string {
 	return ldf.tag
 }
 
-func (ldf *LDFInstruction) getPrms() []string {
+func (ldf LDFInstruction) getPrms() []string {
 	return ldf.prms
 }
 
-func (ldf *LDFInstruction) getAddr() int {
+func (ldf LDFInstruction) getAddr() int {
 	return ldf.addr
 }
 
@@ -185,11 +198,11 @@ type CALLInstruction struct {
 	arity int
 }
 
-func (call *CALLInstruction) getTag() string {
+func (call CALLInstruction) getTag() string {
 	return call.tag
 }
 
-func (call *CALLInstruction) getArity() int {
+func (call CALLInstruction) getArity() int {
 	return call.arity
 }
 
@@ -199,11 +212,11 @@ type TAILCALLInstruction struct {
 	arity int
 }
 
-func (tailCall *TAILCALLInstruction) getTag() string {
+func (tailCall TAILCALLInstruction) getTag() string {
 	return tailCall.tag
 }
 
-func (tailCall *TAILCALLInstruction) getArity() int {
+func (tailCall TAILCALLInstruction) getArity() int {
 	return tailCall.arity
 }
 
@@ -212,6 +225,6 @@ type RESETInstruction struct {
 	tag string
 }
 
-func (reset *RESETInstruction) getTag() string {
+func (reset RESETInstruction) getTag() string {
 	return reset.tag
 }
