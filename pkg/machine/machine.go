@@ -3,6 +3,7 @@
 package machine
 
 import(
+    "cs4215/goophy/pkg/compiler"
 	// "fmt"
 	// "errors"
 	// "encoding/json" // To convert array in string form back into array
@@ -128,7 +129,7 @@ var microcode = map[string]func(map[string]interface{}){
 
 // TODO: Check allowable types for return
 // func run(instrs) interface{} {
-func run(instrs[]map[string]interface{}) interface{} {
+func run(instrs compiler.Instructions) interface{} {
 	// global_environment := NewEnvironmentStack()
 	// global_environment.Extend()
     OS = Stack{}
