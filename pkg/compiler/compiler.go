@@ -1,8 +1,8 @@
 package compiler
 
-// import (
-// 	"pkg/ast"
-// )
+import (
+	"cs4215/goophy/pkg/ast"
+)
 
 /* idk how to fix this builtin mapping need change all the functions from JS to their GO equivalent maybe we do our own built-in mappings for what we want specifically
 var builtin_mapping = map[string] func() {
