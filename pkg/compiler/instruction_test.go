@@ -2,6 +2,7 @@ package compiler
 
 import (
 	"testing"
+	"fmt"
 )
 
 func TestInstructions(t *testing.T) {
@@ -53,7 +54,7 @@ func TestInstructions(t *testing.T) {
 			&RESETInstruction{tag: "RESET"},
 		},
 	}
-
+	fmt.Println(instrs)
 	// Check if the tags and parameters are correct
 	for _, instr := range instrs.instrs {
 		tag := instr.getTag()
