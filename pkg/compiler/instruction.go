@@ -173,6 +173,19 @@ func (exitScope EXITSCOPEInstruction) getTag() string {
 	return exitScope.tag
 }
 
+type LETInstruction struct {
+	tag string
+	sym string
+}
+
+func (let LETInstruction) getTag() string {
+	return let.tag
+}
+
+func (let LETInstruction) getSym() string {
+	return let.sym
+}
+
 // LoaD Function
 type LDFInstruction struct {
 	tag  string

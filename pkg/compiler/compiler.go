@@ -2,6 +2,7 @@ package compiler
 
 import (
 	"cs4215/goophy/pkg/ast"
+	"reflect"
 )
 
 /* idk how to fix this builtin mapping need change all the functions from JS to their GO equivalent maybe we do our own built-in mappings for what we want specifically
@@ -83,18 +84,115 @@ var builtin_mapping = map[string] func() {
 	"tokenize":  tokenize(),
 }*/
 
-// switch cases
-// need an extra done instruction in the function calling this one
+/*
+	ASSIGN   TokenType = "="
+	PLUS     TokenType = "+"
+	MINUS    TokenType = "-"
+	BANG     TokenType = "!"
+	ASTERISK TokenType = "*"
+	SLASH    TokenType = "/"
+	LT       TokenType = "<"
+	GT       TokenType = ">"
+
+	// Delimiters
+	COMMA     TokenType = ","
+	SEMICOLON TokenType = ";"
+
+	LPAREN TokenType = "("
+	RPAREN TokenType = ")"
+	LBRACE TokenType = "{"
+	RBRACE TokenType = "}"
+
+	// Keywords
+	FUNCTION TokenType = "FUNCTION"
+	LET      TokenType = "LET"
+	TRUE     TokenType = "TRUE"
+	FALSE    TokenType = "FALSE"
+	IF       TokenType = "IF"
+	ELSE     TokenType = "ELSE"
+	RETURN   TokenType = "RETURN"
+
+	EQ     TokenType = "=="
+	NOT_EQ TokenType = "!="
+*/
+
+func scan(statements []Statement) []string {
+	var result []string
+	for i, statement := range statements {
+		if (reflect.TypeOf(statement) == LetStatement) {
+			result = append(result, statement.Name.Value)
+		}
+	}
+	return result;
+}
+
+//not done yet for expression statement
 func compile_statement(statement ast.Statement, instrsArray Instructions) Instructions {
 	instrs := instrsArray.getInstrs()
-	token := statement.Node
+	token := statement.node
 	switch token.TokenLiteral() {
-	case "INT":
-		ldcnInstruction := LDCNInstruction{tag: "LDCN", val: token.String()}
-		instrs = append(instrs, ldcnInstruction)
+	case "LET":
+		letStatement := statement(ast.LetStatement)
+		compile_expression(letStatement.Value, instrsArray)
+		letInstruction := LETInstruction{tag: "LET", sym: letStatement.Name.Value}
+		instrs = append(instrs, letInstruction)
+	case "RETURN":
+		returnStatement := statement(ast.ReturnStatement)
+		compile_expression(returnStatement.ReturnValue, instrsArray)
+		// i need to change call into tailcall if its in the return statement
+		if (reflect.TypeOf(returnStatement.ReturnValue) == CallExpression) {
+			// I havent even do a normal call expresison yet so wait
+		} else {
+			resetInstruction := RESETInstruction{tag: "RESET"}
+			instrs = append(instrs, resetInstruction)
+		}
+	case "LBRACE" :
+		blkStatement := statement(ast.BlockStatement)
+		locals := scan(blkStatement.Statements)
+		enterScopeInstruction := ENTERSCOPEInstruction{tag: "ENTER_SCOPE", syms: locals}
+		instrs = append(instrs, enterScopeInstruction)
+		for i, statement := range blkStatement.Statements {
+			instrs = compile_statement(statement, instrs)
+		}		
+		exitScopeInstruction := EXITSCOPEInstruction{tag: "EXIT_SCOPE", syms: locals}
+		instrs = append(instrs, exitScopeInstruction)
+	}
+	return instrsArray
+}
+
+//WIP
+func compile_expression(expression ast.Expression, instrsArray Instructions) Instructions {
+	instrs := instrsArray.getInstrs()
+	token := statement.node
+	switch token.TokenLiteral() {
+	case "ILLEGAL":
+		panic("ILLEGAL EXPRESSION ENCOUNTERED")
+	case "EOF":
+		doneInstruction := DONEInstruction{tag: "DONE"}
+		instrs = append(instrs, doneInstruction)
 	case "IDENT":
 		ldsInstruction := LDSInstruction{tag: "LDS", sym: token.String()}
 		instrs = append(instrs, ldsInstruction)
+	case "INT":
+		ldcnInstruction := LDCNInstruction{tag: "LDCN", val: token.String()}
+		instrs = append(instrs, ldcnInstruction)
+	case "LET":
+		letInstruction := LETInstruction{tag: "LET", sym: token.String()}
+		instrs = append(instrs, letInstruction)
+	case "PLUS", "MINUS", "ASTERISK", "SLASH", "LT", "GT", "EQ", "NOT_EQ": /*tokens have not included modulo*/
+		compile_expression(, instrsArray)
+		binopInstruction := BINOPInstruction{tag: "BINOP", sym: token.String()}
+		instrs = append(instrs, binopInstruction)
+	case "BANG": /* UNARY MINUS not ready yet*/
+		unopInstruction := UNOPInstruction{tag: "UNOP", sym: token.String()}
+		instrs = append(instrs, unopInstruction)
+	case "TRUE", "FALSE":
+		ldcbInstruction := LDCBInstruction{tag: "LDCB", val: token.String()}
+		instrs = append(instrs, ldcbInstruction)
+	case "RETURN":
+		resetInstruction := RESETInstruction{tag: "RESET"}
+		instrs = append(instrs, resetInstruction)
+
 		/* BELOW IS A WORK IN PROGRESS
 		case "name":
 			instrs[wc] = &instruction{tag: "LD", sym: comp.sym, pos: compileTimeEnvironmentPosition(ce, comp.sym)}
