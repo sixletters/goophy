@@ -2,13 +2,10 @@
 
 package machine
 
-import(
-    "cs4215/goophy/pkg/compiler"
-	// "fmt"
-	// "errors"
-	// "encoding/json" // To convert array in string form back into array
-	// "cs4215/goophy/pkg/environment"
-)
+// "errors"
+// "encoding/json" // To convert array in string form back into array
+// "cs4215/goophy/pkg/environment"
+
 // Parser
 // Microcode
 // Scheduler
@@ -21,103 +18,136 @@ var E EnvironmentFrame
 var PC int
 
 // Microcode
-// var microcode = map[string]func(Instruction){
-//     "LDC": func(instr Instruction) {
-//         PC++
-// 		OS.Push(instr.val)
-//     },
-var microcode = map[string]func(map[string]interface{}){
-    "LDC": func(instr map[string]interface{}) {
-        PC++
-        OS.Push(instr["val"])
-    },
+//
+//	var microcode = map[string]func(Instruction){
+//	    "LDC": func(instr Instruction) {
+//	        PC++
+//			OS.Push(instr.val)
+//	    },
+var microcode = map[string]func(instr Instruction){
+	"LDCN": func(instr Instruction) {
+		ldcnInstr, ok := instr.(*LDCNInstruction)
+		if !ok {
+			panic("instr is not of type LDCNInstruction")
+		}
+		PC++
+		OS.Push(ldcnInstr.val)
+	},
+	"LDCB": func(instr Instruction) {
+		ldcbInstr, ok := instr.(*LDCBInstruction)
+		if !ok {
+			panic("instr is not of type LDCBInstruction")
+		}
+		PC++
+		OS.Push(ldcbInstr.val)
+	},
+	"UNOP": func(instr Instruction) {
+		unopInstr, ok := instr.(*UNOPInstruction)
+		if !ok {
+			panic("instr is not of type UNOPInstruction")
+		}
+		PC++
+		OS.Push(apply_unop(string(unopInstr.sym), OS.Pop()))
+	},
+	"BINOP": func(instr Instruction) {
+		binopInstr, ok := instr.(*BINOPInstruction)
+		if !ok {
+			panic("instr is not of type BINOPInstruction")
+		}
+		PC++
+		OS.Push(apply_binop(string(binopInstr.sym), OS.Pop(), OS.Pop()))
+	},
+	"POP": func(instr Instruction) {
+		PC++
+		OS.Pop()
+	},
 }
 
-    // "UNOP": func(instr Instruction) {
-    //     PC++
-	// 	OS.Push(apply_unop(instr.sym, OS.Pop()))
-    // },
-    // "BINOP": func(instr *Instruction) {
-    //     PC++
-	// 	OS.Push(apply_binop(instr.sym, OS.Pop(), OS.Pop()))
-    // },
-    // "POP": func(instr *Instruction) {
-    //     PC++
-    //     OS.Pop()
-    // },
-    // "JOF": func(instr *Instruction) {
-    //     PC = boolToInt(OS.Pop())*instr.addr + boolToInt(!OS.Peek())*(PC + 1 - instr.addr)
-    // },
-    // "GOTO": func(instr *Instruction) {
-    //     PC = instr.addr
-    // },
-    // "ENTER_SCOPE": func(instr *Instruction) {
-    //     PC++
-    //     RTS.Push(&frame{tag: "BLOCK_FRAME", env: E})
-    //     locals := instr.syms
-    //     unassigneds := make([]interface{}, len(locals))
-    //     for i := range unassigneds {
-    //         unassigneds[i] = unassigned
-    //     }
-    //     E = extend(locals, unassigneds, E)
-    // },
-    // "EXIT_SCOPE": func(instr *Instruction) {
-    //     PC++
-    //     E = RTS.Pop().env
-    // },
-    // "LD": func(instr *Instruction) {
-    //     PC++
-	// 	OS.Push(lookup(instr.sym, E))
-    // },
-    // "ASSIGN": func(instr *Instruction) {
-    //     PC++
-    //     assign_value(instr.sym, OS.Peek(), E)
-    // },
-    // "LDF": func(instr *Instruction) {
-    //     PC++
-	// 	OS.Push({tag: "CLOSURE", prms: instr.prms, addr: instr.addr, env: E})
-    // },
-    // "CALL": func(instr *Instruction) {
-    //     arity := instr.arity
-    //     args := make([]interface{}, arity)
-    //     for i := arity - 1; i >= 0; i-- {
-    //         args[i] = OS.Pop()
-    //     }
-    //     sf := OS.pop().(*closure)
-    //     if sf.tag == "BUILTIN" {
-    //         PC++
-    //         push(OS, apply_builtin(sf.sym, args))
-    //         return
-    //     }
-    //     RTS.push(&frame{tag: "CALL_FRAME", addr: PC + 1, env: E})
-    //     E = extend(sf.prms, args, sf.env)
-    //     PC = sf.addr
-    // },
-    // "TAIL_CALL": func(instr *Instruction) {
-    //     arity := instr.arity
-    //     args := make([]interface{}, arity)
-    //     for i := arity - 1; i >= 0; i-- {
-    //         args[i] = OS.pop()
-    //     }
-    //     sf := OS.pop().(*closure)
-    //     if sf.tag == "BUILTIN" {
-    //         PC++
-    //         push(OS, apply_builtin(sf.sym, args))
-    //         return
-    //     }
-    //     E = extend(sf.prms, args, sf.env)
-    //     PC = sf.addr
-    // },
-    // "RESET": func(instr *Instruction) {
-    //     for {
-    //         top_frame := RTS.pop()
-    //         if top_frame.tag == "CALL_FRAME" {
-    //             PC = top_frame.addr
-    //             E = top_frame.env
-    //             break
-    //         }
-    //     }
-    // },
+// "UNOP": func(instr Instruction) {
+//     PC++
+// 	OS.Push(apply_unop(instr.sym, OS.Pop()))
+// },
+// "BINOP": func(instr *Instruction) {
+//     PC++
+// 	OS.Push(apply_binop(instr.sym, OS.Pop(), OS.Pop()))
+// },
+// "POP": func(instr *Instruction) {
+//     PC++
+//     OS.Pop()
+// },
+// "JOF": func(instr *Instruction) {
+//     PC = boolToInt(OS.Pop())*instr.addr + boolToInt(!OS.Peek())*(PC + 1 - instr.addr)
+// },
+// "GOTO": func(instr *Instruction) {
+//     PC = instr.addr
+// },
+// "ENTER_SCOPE": func(instr *Instruction) {
+//     PC++
+//     RTS.Push(&frame{tag: "BLOCK_FRAME", env: E})
+//     locals := instr.syms
+//     unassigneds := make([]interface{}, len(locals))
+//     for i := range unassigneds {
+//         unassigneds[i] = unassigned
+//     }
+//     E = extend(locals, unassigneds, E)
+// },
+// "EXIT_SCOPE": func(instr *Instruction) {
+//     PC++
+//     E = RTS.Pop().env
+// },
+// "LD": func(instr *Instruction) {
+//     PC++
+// 	OS.Push(lookup(instr.sym, E))
+// },
+// "ASSIGN": func(instr *Instruction) {
+//     PC++
+//     assign_value(instr.sym, OS.Peek(), E)
+// },
+// "LDF": func(instr *Instruction) {
+//     PC++
+// 	OS.Push({tag: "CLOSURE", prms: instr.prms, addr: instr.addr, env: E})
+// },
+// "CALL": func(instr *Instruction) {
+//     arity := instr.arity
+//     args := make([]interface{}, arity)
+//     for i := arity - 1; i >= 0; i-- {
+//         args[i] = OS.Pop()
+//     }
+//     sf := OS.pop().(*closure)
+//     if sf.tag == "BUILTIN" {
+//         PC++
+//         push(OS, apply_builtin(sf.sym, args))
+//         return
+//     }
+//     RTS.push(&frame{tag: "CALL_FRAME", addr: PC + 1, env: E})
+//     E = extend(sf.prms, args, sf.env)
+//     PC = sf.addr
+// },
+// "TAIL_CALL": func(instr *Instruction) {
+//     arity := instr.arity
+//     args := make([]interface{}, arity)
+//     for i := arity - 1; i >= 0; i-- {
+//         args[i] = OS.pop()
+//     }
+//     sf := OS.pop().(*closure)
+//     if sf.tag == "BUILTIN" {
+//         PC++
+//         push(OS, apply_builtin(sf.sym, args))
+//         return
+//     }
+//     E = extend(sf.prms, args, sf.env)
+//     PC = sf.addr
+// },
+// "RESET": func(instr *Instruction) {
+//     for {
+//         top_frame := RTS.pop()
+//         if top_frame.tag == "CALL_FRAME" {
+//             PC = top_frame.addr
+//             E = top_frame.env
+//             break
+//         }
+//     }
+// },
 // }
 
 //TODO: Finalize struct for instruction
@@ -129,32 +159,23 @@ var microcode = map[string]func(map[string]interface{}){
 
 // TODO: Check allowable types for return
 // func run(instrs) interface{} {
-func run(instrs compiler.Instructions) interface{} {
+func run(instrs Instructions) interface{} {
 	// global_environment := NewEnvironmentStack()
 	// global_environment.Extend()
-    OS = Stack{}
-    PC = 0
-    // E = global_environment
-    // RTS = Stack{}
-
-	//Placeholder instruction
-	// instrs := []Instruction{
-	// 	{"LDC",1},
-	// 	{"DONE",0},
-	// }
-
-    for instrs[PC]["tag"] != "DONE" {
-        instr := instrs[PC]
-        // fmt.Println(instr)
-        microcode[instr["tag"].(string)](instr)
-    }
+	OS = Stack{}
+	PC = 0
+	// E = global_environment
+	// RTS = Stack{}
+	instrs_a := instrs.instrs
+	for instrs_a[PC].getTag() != "DONE" {
+		instr := instrs_a[PC]
+		// fmt.Println(PC)
+		// fmt.Println(instrs_a[PC].getTag())
+		microcode[instr.getTag()](instr)
+	}
 	// fmt.Println(instrs[0])
-    return OS.Peek()
+	return OS.Peek()
 }
-
-
-
-
 
 // Testing for Virtual Machine
 // func main() {
