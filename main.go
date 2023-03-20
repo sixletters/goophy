@@ -84,7 +84,8 @@ func main() {
 		panic(err)
 	}
 	input := `
-	x + 1;
+	let x = 10 - 5;
+	1 + 1;
 	`
 	l := lexer.NewLexer(input)
 	p := parser.New(l)

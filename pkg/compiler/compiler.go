@@ -2,6 +2,7 @@ package compiler
 
 import (
 	"cs4215/goophy/pkg/ast"
+	"fmt"
 	"strconv"
 )
 
@@ -127,7 +128,7 @@ func Compile_statement(statement ast.Statement, instrs []Instruction) []Instruct
 	}
 	exitScopeInstruction := EXITSCOPEInstruction{tag: "EXIT_SCOPE"}
 	instrs = append(instrs, exitScopeInstruction)*/
-	case "LPAREN":
+	default:
 		expressionStatement := statement.(*ast.ExpressionStatement)
 		newInstrs := Compile_expression(expressionStatement.Expression, instrs)
 		instrs = append(instrs, newInstrs...)
@@ -138,6 +139,7 @@ func Compile_statement(statement ast.Statement, instrs []Instruction) []Instruct
 // WIP
 func Compile_expression(expression ast.Expression, instrs []Instruction) []Instruction {
 	token := expression.GetToken()
+	fmt.Println(token.Type)
 	switch token.Type {
 	case "ILLEGAL":
 		panic("ILLEGAL EXPRESSION ENCOUNTERED")
@@ -155,12 +157,14 @@ func Compile_expression(expression ast.Expression, instrs []Instruction) []Instr
 		val, _ := strconv.Atoi(token.Literal)
 		ldcnInstruction := LDCNInstruction{tag: "LDCN", val: val}
 		instrs = append(instrs, ldcnInstruction)
-	case "PLUS", "MINUS", "ASTERISK", "SLASH", "LT", "GT", "EQ", "NOT_EQ": /*tokens have not included modulo*/
+	case "+", "MINUS", "ASTERISK", "SLASH", "LT", "GT", "EQ", "NOT_EQ": /*tokens have not included modulo*/
 		expr := expression.(*ast.InfixExpression)
-		Compile_expression(expr.Left, instrs)
+		newInstrs := Compile_expression(expr.Left, instrs)
+		instrs = append(instrs, newInstrs...)
 		binopInstruction := BINOPInstruction{tag: "BINOP", sym: BINOPS(token.Literal)}
-		Compile_expression(expr.Right, instrs)
 		instrs = append(instrs, binopInstruction)
+		newerInstrs := Compile_expression(expr.Right, instrs)
+		instrs = append(instrs, newerInstrs...)
 	case "BANG":
 	}
 	return instrs
