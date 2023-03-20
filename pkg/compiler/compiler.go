@@ -145,15 +145,15 @@ func Compile_expression(expression ast.Expression, instrs []Instruction) []Instr
 		doneInstruction := DONEInstruction{tag: "DONE"}
 		instrs = append(instrs, doneInstruction)
 	case "IDENT":
-		ldsInstruction := LDSInstruction{tag: "LDS", sym: token.Literal}
+		ldsInstruction := LDSInstruction{tag: "LDS", Sym: token.Literal}
 		instrs = append(instrs, ldsInstruction)
 	case "TRUE", "FALSE":
 		val, _ := strconv.ParseBool(token.Literal)
-		ldcbInstruction := LDCBInstruction{tag: "LDCB", val: val}
+		ldcbInstruction := LDCBInstruction{tag: "LDCB", Val: val}
 		instrs = append(instrs, ldcbInstruction)
 	case "INT":
 		val, _ := strconv.Atoi(token.Literal)
-		ldcnInstruction := LDCNInstruction{tag: "LDCN", val: val}
+		ldcnInstruction := LDCNInstruction{tag: "LDCN", Val: val}
 		instrs = append(instrs, ldcnInstruction)
 	case "+", "-", "*", "/", "<=", ">", "==", "!=": /*tokens have not included modulo*/
 		expr := expression.(*ast.InfixExpression)
@@ -161,7 +161,7 @@ func Compile_expression(expression ast.Expression, instrs []Instruction) []Instr
 		instrs = append(instrs, newInstrs...)
 		newerInstrs := Compile_expression(expr.Right, []Instruction{})
 		instrs = append(instrs, newerInstrs...)
-		binopInstruction := BINOPInstruction{tag: "BINOP", sym: BINOPS(token.Literal)}
+		binopInstruction := BINOPInstruction{tag: "BINOP", Sym: BINOPS(token.Literal)}
 		instrs = append(instrs, binopInstruction)
 	case "BANG":
 	}
