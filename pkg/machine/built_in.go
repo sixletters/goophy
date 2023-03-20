@@ -1,4 +1,4 @@
-// package machine
+package machine
 
 // builtin_mapping := {
 //     display       : display,
