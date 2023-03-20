@@ -43,7 +43,7 @@ func (lds LDSInstruction) GetTag() string {
 	return lds.tag
 }
 
-func (lds LDSInstruction) getSym() string {
+func (lds LDSInstruction) GetSym() string {
 	return lds.Sym
 }
 

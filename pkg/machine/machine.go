@@ -29,7 +29,7 @@ var PC int
 //	    },
 var microcode = map[string]func(instr compiler.Instruction){
 	"LDCN": func(instr compiler.Instruction) {
-		ldcnInstr, ok := instr.(*compiler.LDCNInstruction)
+		ldcnInstr, ok := instr.(compiler.LDCNInstruction)
 		if !ok {
 			panic("instr is not of type LDCNInstruction")
 		}
@@ -37,7 +37,7 @@ var microcode = map[string]func(instr compiler.Instruction){
 		OS.Push(ldcnInstr.Val)
 	},
 	"LDCB": func(instr compiler.Instruction) {
-		ldcbInstr, ok := instr.(*compiler.LDCBInstruction)
+		ldcbInstr, ok := instr.(compiler.LDCBInstruction)
 		if !ok {
 			panic("instr is not of type LDCBInstruction")
 		}
@@ -45,7 +45,7 @@ var microcode = map[string]func(instr compiler.Instruction){
 		OS.Push(ldcbInstr.Val)
 	},
 	"UNOP": func(instr compiler.Instruction) {
-		unopInstr, ok := instr.(*compiler.UNOPInstruction)
+		unopInstr, ok := instr.(compiler.UNOPInstruction)
 		if !ok {
 			panic("instr is not of type UNOPInstruction")
 		}
@@ -53,7 +53,7 @@ var microcode = map[string]func(instr compiler.Instruction){
 		OS.Push(apply_unop(string(unopInstr.Sym), OS.Pop()))
 	},
 	"BINOP": func(instr compiler.Instruction) {
-		binopInstr, ok := instr.(*compiler.BINOPInstruction)
+		binopInstr, ok := instr.(compiler.BINOPInstruction)
 		if !ok {
 			panic("instr is not of type BINOPInstruction")
 		}
@@ -64,14 +64,30 @@ var microcode = map[string]func(instr compiler.Instruction){
 		PC++
 		OS.Pop()
 	},
+	"LD": func(instr compiler.Instruction) {
+		ldsInstr, ok := instr.(compiler.LDSInstruction)
+		if !ok {
+			panic("instr is not of type LDSInstruction")
+		}
+		PC++
+		OS.Push(E.Get(ldsInstr.GetSym())) //Note this pushes interface{} type into OS
+	},
+	// "ASSIGN": func(instr compiler.Instruction) {
+	//     assignInstr, ok := instr.(compiler.ASSIGNInstruction)
+	// 	if !ok {
+	// 		panic("instr is not of type ASSIGNInstruction")
+	// 	}
+	//     PC++
+	//     assign_value(instr.sym, OS.Peek(), E)
+	// },
 	// "ENTER_SCOPE": func(instr compiler.Instruction) {
 	// 	PC++
-	// 	enterscopeInstr, ok := instr.(*ENTERSCOPEInstruction)
+	// 	enterscopeInstr, ok := instr.(compiler.ENTERSCOPEInstruction)
 	// 	if !ok {
 	// 		panic("instr is not of type BINOPInstruction")
 	// 	}
 	// 	RTS.Push(&stackFrame{tag: "BLOCK_FRAME", E: E})
-	// 	locals := enterscopeInstr.syms
+	// 	locals := enterscopeInstr.GetSyms()
 	// 	unassigneds := make([]interface{}, len(locals)) //TODO: Change the type to String?
 	// 	for i := range unassigneds {
 	// 		unassigneds[i] = unassigned

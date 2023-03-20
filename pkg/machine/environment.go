@@ -46,14 +46,16 @@ func (env *EnvironmentStack) Set(varName string, value interface{}) {
 	envFrame.setVar(varName, value)
 }
 
-func (env *EnvironmentStack) Get(varName string) (interface{}, bool) {
+func (env *EnvironmentStack) Get(varName string) interface{} {
 	for i := len(env.envFrames) - 1; i >= 0; i-- {
 		if val, ok := env.envFrames[i].getVar(varName); ok {
-			return val, true
+			// return val, true
+			return val
 		}
 
 	}
-	return nil, false
+	// return nil, false
+	return nil
 }
 
 var unassigned = struct {
