@@ -27,6 +27,12 @@ var PC int
 //	        PC++
 //			OS.Push(instr.val)
 //	    },
+
+// helper functions to be relocated
+// func assign(sym, val, Env){
+
+// }
+
 var microcode = map[string]func(instr compiler.Instruction){
 	"LDCN": func(instr compiler.Instruction) {
 		ldcnInstr, ok := instr.(compiler.LDCNInstruction)
@@ -73,12 +79,12 @@ var microcode = map[string]func(instr compiler.Instruction){
 		OS.Push(E.Get(ldsInstr.GetSym())) //Note this pushes interface{} type into OS
 	},
 	// "ASSIGN": func(instr compiler.Instruction) {
-	//     assignInstr, ok := instr.(compiler.ASSIGNInstruction)
+	// 	assignInstr, ok := instr.(compiler.ASSIGNInstruction)
 	// 	if !ok {
 	// 		panic("instr is not of type ASSIGNInstruction")
 	// 	}
-	//     PC++
-	//     assign_value(instr.sym, OS.Peek(), E)
+	// 	PC++
+	// 	assign_value(assignInstr.GetSym(), OS.Peek(), E)
 	// },
 	// "ENTER_SCOPE": func(instr compiler.Instruction) {
 	// 	PC++
