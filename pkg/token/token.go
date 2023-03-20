@@ -25,7 +25,7 @@ const (
 	ILLEGAL TokenType = "ILLEGAL" // Token/Char that we dont know about
 	EOF     TokenType = "EOF"     // end of file
 
-	// Idenetifiers + literals
+	// Identifiers + literals
 	IDENT TokenType = "IDENT"
 	INT   TokenType = "INT"
 

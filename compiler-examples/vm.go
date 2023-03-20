@@ -64,4 +64,11 @@ func main() {
 	}
 	// instrs := json.Unmarshal([]byte(str), &arr)//input instruction array here
 	fmt.Println(arr)
+	u need an operand stack aka stash
+	u need a stack for the commands <- instruction aka agenda
+	^ need handle using array operations
+	u also need current environment <- for evaluation of names/variables 
+	lambda and apply is fking hard, need to consider the parameters wrt to current environment and leave mark so that dont fully execute if theres an ifelse block
+	builtin instructions are special, like math stuff <- we slap these in the global frame under builtin mapping
+	lookup needed and applied when the top of agenda is a name
 }
