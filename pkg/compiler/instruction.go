@@ -5,18 +5,6 @@ type Instruction interface {
 	// instructionNode()
 }
 
-type Instructions struct {
-	instrs []Instruction
-}
-
-func (instrs Instructions) getInstrs() []Instruction {
-	return instrs.instrs
-}
-
-func (instrs Instructions) addInstrs(instruction Instruction, wc int) {
-	instrs.instrs = append(instrs.instrs, instruction)
-}
-
 // LDC ->Boolean
 type LDCBInstruction struct {
 	tag string
@@ -173,17 +161,17 @@ func (exitScope EXITSCOPEInstruction) getTag() string {
 	return exitScope.tag
 }
 
-type LETInstruction struct {
+type ASSIGNInstruction struct {
 	tag string
 	sym string
 }
 
-func (let LETInstruction) getTag() string {
-	return let.tag
+func (assign ASSIGNInstruction) getTag() string {
+	return assign.tag
 }
 
-func (let LETInstruction) getSym() string {
-	return let.sym
+func (assign ASSIGNInstruction) getSym() string {
+	return assign.sym
 }
 
 // LoaD Function

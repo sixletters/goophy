@@ -8,6 +8,7 @@ import (
 type Node interface {
 	TokenLiteral() string
 	String() string
+	GetToken() token.Token
 }
 
 type Statement interface {
@@ -46,8 +47,9 @@ type LetStatement struct {
 	Value Expression
 }
 
-func (ls *LetStatement) statementNode()       {}
-func (ls *LetStatement) TokenLiteral() string { return ls.Token.Literal }
+func (ls *LetStatement) statementNode()        {}
+func (ls *LetStatement) TokenLiteral() string  { return ls.Token.Literal }
+func (ls *LetStatement) GetToken() token.Token { return ls.Token }
 func (ls *LetStatement) String() string {
 	var out bytes.Buffer
 	out.WriteString(ls.TokenLiteral() + " ")
@@ -65,17 +67,19 @@ type Identifier struct {
 	Value string
 }
 
-func (i *Identifier) expressionNode()      {}
-func (i *Identifier) TokenLiteral() string { return i.Token.Literal }
-func (i *Identifier) String() string       { return i.Value }
+func (i *Identifier) expressionNode()       {}
+func (i *Identifier) TokenLiteral() string  { return i.Token.Literal }
+func (i *Identifier) GetToken() token.Token { return i.Token }
+func (i *Identifier) String() string        { return i.Value }
 
 type ReturnStatement struct {
 	Token       token.Token
 	ReturnValue Expression
 }
 
-func (rs *ReturnStatement) statementNode()       {}
-func (rs *ReturnStatement) TokenLiteral() string { return rs.Token.Literal }
+func (rs *ReturnStatement) statementNode()        {}
+func (rs *ReturnStatement) TokenLiteral() string  { return rs.Token.Literal }
+func (rs *ReturnStatement) GetToken() token.Token { return rs.Token }
 func (rs *ReturnStatement) String() string {
 	var out bytes.Buffer
 	out.WriteString(rs.TokenLiteral() + " ")
@@ -91,8 +95,9 @@ type ExpressionStatement struct {
 	Expression Expression
 }
 
-func (es *ExpressionStatement) statementNode()       {}
-func (es *ExpressionStatement) TokenLiteral() string { return es.Token.Literal }
+func (es *ExpressionStatement) statementNode()        {}
+func (es *ExpressionStatement) TokenLiteral() string  { return es.Token.Literal }
+func (es *ExpressionStatement) GetToken() token.Token { return es.Token }
 func (es *ExpressionStatement) String() string {
 	if es.Expression != nil {
 		return es.Expression.String()
@@ -105,9 +110,10 @@ type IntegerLiteral struct {
 	Value int64
 }
 
-func (il *IntegerLiteral) expressionNode()      {}
-func (il *IntegerLiteral) TokenLiteral() string { return il.Token.Literal }
-func (il *IntegerLiteral) String() string       { return il.Token.Literal }
+func (il *IntegerLiteral) expressionNode()       {}
+func (il *IntegerLiteral) TokenLiteral() string  { return il.Token.Literal }
+func (il *IntegerLiteral) GetToken() token.Token { return il.Token }
+func (il *IntegerLiteral) String() string        { return il.Token.Literal }
 
 type PrefixExpression struct {
 	Token    token.Token // The token ! or -
@@ -115,8 +121,9 @@ type PrefixExpression struct {
 	Right    Expression
 }
 
-func (pe *PrefixExpression) expressionNode()      {}
-func (pe *PrefixExpression) TokenLiteral() string { return pe.Token.Literal }
+func (pe *PrefixExpression) expressionNode()       {}
+func (pe *PrefixExpression) TokenLiteral() string  { return pe.Token.Literal }
+func (pe *PrefixExpression) GetToken() token.Token { return pe.Token }
 func (pe *PrefixExpression) String() string {
 	var out bytes.Buffer
 	out.WriteString("(")
@@ -133,8 +140,9 @@ type InfixExpression struct {
 	Right    Expression
 }
 
-func (ie *InfixExpression) expressionNode()      {}
-func (ie *InfixExpression) TokenLiteral() string { return ie.Token.Literal }
+func (ie *InfixExpression) expressionNode()       {}
+func (ie *InfixExpression) TokenLiteral() string  { return ie.Token.Literal }
+func (ie *InfixExpression) GetToken() token.Token { return ie.Token }
 func (ie *InfixExpression) String() string {
 	var out bytes.Buffer
 	out.WriteString("(")
@@ -150,6 +158,7 @@ type Boolean struct {
 	Value bool
 }
 
-func (b *Boolean) expressionNode()      {}
-func (b *Boolean) TokenLiteral() string { return b.Token.Literal }
-func (b *Boolean) String() string       { return b.Token.Literal }
+func (b *Boolean) expressionNode()       {}
+func (b *Boolean) TokenLiteral() string  { return b.Token.Literal }
+func (b *Boolean) String() string        { return b.Token.Literal }
+func (b *Boolean) GetToken() token.Token { return b.Token }
