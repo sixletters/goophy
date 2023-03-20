@@ -1,9 +1,9 @@
 package main
 
 import (
-	"cs4215/goophy/pkg/repl"
+	"cs4215/goophy/pkg/lexer"
+	"cs4215/goophy/pkg/parser"
 	"fmt"
-	"os"
 	"os/user"
 )
 
@@ -78,12 +78,17 @@ import (
 // }
 
 func main() {
-	user, err := user.Current()
+	_, err := user.Current()
 	if err != nil {
 		panic(err)
 	}
-	fmt.Printf("Hello %s! This is the Monkey programming language!\n",
-		user.Username)
-	fmt.Printf("Feel free to type in commands\n")
-	repl.Start(os.Stdin, os.Stdout)
+	input := `
+	let y = x + 1 * 3 + (1 + 2);
+	`
+	l := lexer.NewLexer(input)
+	p := parser.New(l)
+	program := p.ParseProgram()
+	fmt.Println(program.String())
+	// fmt.Printf("Feel free to type in commands\n")
+	// repl.Start(os.Stdin, os.Stdout)
 }
