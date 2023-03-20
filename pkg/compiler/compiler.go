@@ -159,10 +159,10 @@ func Compile_expression(expression ast.Expression, instrs []Instruction) []Instr
 		expr := expression.(*ast.InfixExpression)
 		newInstrs := Compile_expression(expr.Left, []Instruction{})
 		instrs = append(instrs, newInstrs...)
-		binopInstruction := BINOPInstruction{tag: "BINOP", Sym: BINOPS(token.Literal)}
-		instrs = append(instrs, binopInstruction)
 		newerInstrs := Compile_expression(expr.Right, []Instruction{})
 		instrs = append(instrs, newerInstrs...)
+		binopInstruction := BINOPInstruction{tag: "BINOP", Sym: BINOPS(token.Literal)}
+		instrs = append(instrs, binopInstruction)
 	case "BANG":
 	}
 	return instrs
