@@ -127,7 +127,7 @@ func Compile_statement(statement ast.Statement, instrs []Instruction) []Instruct
 	}
 	exitScopeInstruction := EXITSCOPEInstruction{tag: "EXIT_SCOPE"}
 	instrs = append(instrs, exitScopeInstruction)*/
-	case "LPAREN":
+	default:
 		expressionStatement := statement.(*ast.ExpressionStatement)
 		newInstrs := Compile_expression(expressionStatement.Expression, instrs)
 		instrs = append(instrs, newInstrs...)
@@ -155,12 +155,14 @@ func Compile_expression(expression ast.Expression, instrs []Instruction) []Instr
 		val, _ := strconv.Atoi(token.Literal)
 		ldcnInstruction := LDCNInstruction{tag: "LDCN", Val: val}
 		instrs = append(instrs, ldcnInstruction)
-	case "PLUS", "MINUS", "ASTERISK", "SLASH", "LT", "GT", "EQ", "NOT_EQ": /*tokens have not included modulo*/
+	case "+", "-", "*", "/", "<=", ">", "==", "!=": /*tokens have not included modulo*/
 		expr := expression.(*ast.InfixExpression)
-		Compile_expression(expr.Left, instrs)
+		newInstrs := Compile_expression(expr.Left, []Instruction{})
+		instrs = append(instrs, newInstrs...)
 		binopInstruction := BINOPInstruction{tag: "BINOP", Sym: BINOPS(token.Literal)}
-		Compile_expression(expr.Right, instrs)
 		instrs = append(instrs, binopInstruction)
+		newerInstrs := Compile_expression(expr.Right, []Instruction{})
+		instrs = append(instrs, newerInstrs...)
 	case "BANG":
 	}
 	return instrs
