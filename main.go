@@ -1,6 +1,7 @@
 package main
 
 import (
+	"cs4215/goophy/pkg/compiler"
 	"cs4215/goophy/pkg/lexer"
 	"cs4215/goophy/pkg/parser"
 	"fmt"
@@ -83,11 +84,12 @@ func main() {
 		panic(err)
 	}
 	input := `
-	let y = x + 1 * 3 + (1 + 2);
+	x + 1;
 	`
 	l := lexer.NewLexer(input)
 	p := parser.New(l)
 	program := p.ParseProgram()
+	fmt.Println(compiler.Compile(*program))
 	fmt.Println(program.String())
 	// fmt.Printf("Feel free to type in commands\n")
 	// repl.Start(os.Stdin, os.Stdout)
