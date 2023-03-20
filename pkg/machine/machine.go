@@ -14,7 +14,7 @@ package machine
 // RTS, OS, PC, E
 var RTS Stack
 var OS Stack
-var E EnvironmentFrame
+var E EnvironmentStack
 var PC int
 
 // Microcode
@@ -61,6 +61,20 @@ var microcode = map[string]func(instr Instruction){
 		PC++
 		OS.Pop()
 	},
+	// "ENTER_SCOPE": func(instr Instruction) {
+	// 	PC++
+	// 	enterscopeInstr, ok := instr.(*ENTERSCOPEInstruction)
+	// 	if !ok {
+	// 		panic("instr is not of type BINOPInstruction")
+	// 	}
+	// 	RTS.Push(&stackFrame{tag: "BLOCK_FRAME", E: E})
+	// 	locals := enterscopeInstr.syms
+	// 	unassigneds := make([]interface{}, len(locals)) //TODO: Change the type to String?
+	// 	for i := range unassigneds {
+	// 		unassigneds[i] = unassigned
+	// 	}
+	// 	E = E.Extend(locals, unassigneds, E)
+	// },
 }
 
 // "UNOP": func(instr Instruction) {
@@ -160,12 +174,12 @@ var microcode = map[string]func(instr Instruction){
 // TODO: Check allowable types for return
 // func run(instrs) interface{} {
 func run(instrs Instructions) interface{} {
-	// global_environment := NewEnvironmentStack()
-	// global_environment.Extend()
+	global_environment := NewEnvironmentStack() //TODO: Populate global environment with all built-ins
+	global_environment.Extend()
 	OS = Stack{}
 	PC = 0
-	// E = global_environment
-	// RTS = Stack{}
+	E = *global_environment
+	RTS = Stack{}
 	instrs_a := instrs.instrs
 	for instrs_a[PC].getTag() != "DONE" {
 		instr := instrs_a[PC]

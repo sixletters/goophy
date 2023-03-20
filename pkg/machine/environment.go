@@ -1,6 +1,5 @@
 package machine
 
-
 type EnvironmentFrame struct {
 	vars map[string]interface{}
 }
@@ -55,4 +54,10 @@ func (env *EnvironmentStack) Get(varName string) (interface{}, bool) {
 
 	}
 	return nil, false
+}
+
+var unassigned = struct {
+	tag string
+}{
+	tag: "unassigned",
 }
