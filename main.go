@@ -95,6 +95,8 @@ func main() {
 	// fmt.Println(program.String())
 	val := machine.Run(instrs)
 	fmt.Println(val)
+	//thread pool / when u need a concurrent thread create one
+	//simple concurrency control by next tues, looking forward then we see how much of go we cna implement
 	// val := run(instrs)
 	// fmt.Println(compiler.Compile(*program))
 	// fmt.Println(program.String())

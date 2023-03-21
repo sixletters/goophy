@@ -116,7 +116,7 @@ func Compile_statement(statement ast.Statement, instrs []Instruction) []Instruct
 		} else {*/
 		resetInstruction := RESETInstruction{Tag: "RESET"}
 		instrs = append(instrs, resetInstruction)
-	/*case "LBRACE":
+	/*case "{LBRACE}":
 	blkStatement := statement.(*ast.BlockStatement)
 	locals := scan(blkStatement.Statements)
 	enterScopeInstruction := ENTERSCOPEInstruction{Tag: "ENTER_SCOPE", syms: locals}
