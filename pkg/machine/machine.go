@@ -220,7 +220,16 @@ func Run(instrs []compiler.Instruction) interface{} {
 		// fmt.Println(PC)
 		// fmt.Println(instrs_a[PC].GetTag())
 		// microcode[instr.GetTag()](instr)
+		// fmt.Println(i.GetTag())
+		// instr, ok := microcode[i.GetTag()]
+		if i.GetTag() == "DONE" {
+			break
+		}
 		microcode[i.GetTag()](i)
+		// if !ok {
+		// 	continue
+		// }
+		// instr(i)
 	}
 	// fmt.Println(instrs[0])
 	return OS.Peek()
