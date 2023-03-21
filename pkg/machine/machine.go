@@ -29,9 +29,6 @@ var PC int
 //	    },
 
 // helper functions to be relocated
-func assign_value(sym string, val interface{}, Env *EnvironmentStack) {
-
-}
 
 var microcode = map[string]func(instr compiler.Instruction){
 	"LDCN": func(instr compiler.Instruction) {
@@ -70,7 +67,7 @@ var microcode = map[string]func(instr compiler.Instruction){
 		PC++
 		OS.Pop()
 	},
-	"LD": func(instr compiler.Instruction) {
+	"LDS": func(instr compiler.Instruction) {
 		ldsInstr, ok := instr.(compiler.LDSInstruction)
 		if !ok {
 			panic("instr is not of type LDSInstruction")
@@ -78,28 +75,39 @@ var microcode = map[string]func(instr compiler.Instruction){
 		PC++
 		OS.Push(E.Get(ldsInstr.GetSym())) //Note this pushes interface{} type into OS
 	},
+	// throw error if cannot find value
 	"ASSIGN": func(instr compiler.Instruction) {
 		assignInstr, ok := instr.(compiler.ASSIGNInstruction)
 		if !ok {
 			panic("instr is not of type ASSIGNInstruction")
 		}
 		PC++
-		assign_value(assignInstr.GetSym(), OS.Peek(), &E)
+		E.Set(assignInstr.GetSym(), OS.Peek())
+		// assign_value(assignInstr.GetSym(), OS.Peek(), &E)
 	},
-	// "ENTER_SCOPE": func(instr compiler.Instruction) {
-	// 	PC++
-	// 	enterscopeInstr, ok := instr.(compiler.ENTERSCOPEInstruction)
-	// 	if !ok {
-	// 		panic("instr is not of type BINOPInstruction")
-	// 	}
-	// 	RTS.Push(&stackFrame{tag: "BLOCK_FRAME", E: E})
-	// 	locals := enterscopeInstr.GetSyms()
-	// 	unassigneds := make([]interface{}, len(locals)) //TODO: Change the type to String?
-	// 	for i := range unassigneds {
-	// 		unassigneds[i] = unassigned
-	// 	}
-	// 	E = E.Extend(locals, unassigneds, E)
-	// },
+	"ENTER_SCOPE": func(instr compiler.Instruction) {
+		PC++
+		enterscopeInstr, ok := instr.(compiler.ENTERSCOPEInstruction)
+		if !ok {
+			panic("instr is not of type BINOPInstruction")
+		}
+		// RTS.Push(&stackFrame{tag: "BLOCK_FRAME", E: E}) //TODO: Include RTS back for OS, PC
+		locals := enterscopeInstr.GetSyms()
+		E.Extend()
+		for _, i := range locals {
+			E.Set(i, unassigned)
+		}
+		// unassigneds := make([]interface{}, len(locals)) //TODO: Change the type to String?
+		// for i := range unassigneds {
+		// 	unassigneds[i] = unassigned
+		// }
+		// E.Extend()
+		// E.Set()
+	},
+	"EXIT_SCOPE": func(instr compiler.Instruction) {
+		PC++
+		E.Pop()
+	},
 }
 
 // "UNOP": func(instr compiler.Instruction) {
@@ -210,7 +218,7 @@ func Run(instrs []compiler.Instruction) interface{} {
 	for _, i := range instrs_a {
 		// instr := instrs_a[PC]
 		// fmt.Println(PC)
-		// fmt.Println(instrs_a[PC].getTag())
+		// fmt.Println(instrs_a[PC].GetTag())
 		// microcode[instr.GetTag()](instr)
 		microcode[i.GetTag()](i)
 	}

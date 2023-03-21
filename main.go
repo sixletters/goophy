@@ -85,15 +85,14 @@ func main() {
 		panic(err)
 	}
 	input := `
-	let x = 10 - 5;
-	1 + 1;
+	let x = 10 - 6 - 5 * 10; x;
 	`
 	l := lexer.NewLexer(input)
 	p := parser.New(l)
 	program := p.ParseProgram()
 	instrs := compiler.Compile(*program)
-	fmt.Println(compiler.Compile(*program))
-	fmt.Println(program.String())
+	// fmt.Println(compiler.Compile(*program))
+	// fmt.Println(program.String())
 	val := machine.Run(instrs)
 	fmt.Println(val)
 	// val := run(instrs)
