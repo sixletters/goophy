@@ -29,9 +29,9 @@ var PC int
 //	    },
 
 // helper functions to be relocated
-// func assign(sym, val, Env){
+func assign_value(sym string, val interface{}, Env *EnvironmentStack) {
 
-// }
+}
 
 var microcode = map[string]func(instr compiler.Instruction){
 	"LDCN": func(instr compiler.Instruction) {
@@ -78,14 +78,14 @@ var microcode = map[string]func(instr compiler.Instruction){
 		PC++
 		OS.Push(E.Get(ldsInstr.GetSym())) //Note this pushes interface{} type into OS
 	},
-	// "ASSIGN": func(instr compiler.Instruction) {
-	// 	assignInstr, ok := instr.(compiler.ASSIGNInstruction)
-	// 	if !ok {
-	// 		panic("instr is not of type ASSIGNInstruction")
-	// 	}
-	// 	PC++
-	// 	assign_value(assignInstr.GetSym(), OS.Peek(), E)
-	// },
+	"ASSIGN": func(instr compiler.Instruction) {
+		assignInstr, ok := instr.(compiler.ASSIGNInstruction)
+		if !ok {
+			panic("instr is not of type ASSIGNInstruction")
+		}
+		PC++
+		assign_value(assignInstr.GetSym(), OS.Peek(), &E)
+	},
 	// "ENTER_SCOPE": func(instr compiler.Instruction) {
 	// 	PC++
 	// 	enterscopeInstr, ok := instr.(compiler.ENTERSCOPEInstruction)
