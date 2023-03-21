@@ -2,6 +2,7 @@ package compiler
 
 import (
 	"cs4215/goophy/pkg/ast"
+	"fmt"
 	"strconv"
 )
 
@@ -138,6 +139,7 @@ func Compile_statement(statement ast.Statement, instrs []Instruction) []Instruct
 // WIP
 func Compile_expression(expression ast.Expression, instrs []Instruction) []Instruction {
 	token := expression.GetToken()
+	fmt.Println(token.Type)
 	switch token.Type {
 	case "ILLEGAL":
 		panic("ILLEGAL EXPRESSION ENCOUNTERED")
@@ -170,8 +172,19 @@ func Compile_expression(expression ast.Expression, instrs []Instruction) []Instr
 
 func Compile(program ast.Program) []Instruction {
 	instrs := make([]Instruction, 0)
-	for _, statement := range program.Statements {
+	locals := scan(program.Statements)
+	enterScopeInstruction := ENTERSCOPEInstruction{Tag: "ENTER_SCOPE", syms: locals}
+	instrs = append(instrs, enterScopeInstruction)
+	for i, statement := range program.Statements {
 		instrs = append(instrs, Compile_statement(statement, []Instruction{})...)
+		if i != len(program.Statements)-1 {
+			popInstruction := POPInstruction{Tag: "POP"}
+			instrs = append(instrs, popInstruction)
+		}
 	}
+	exitScopeInstruction := EXITSCOPEInstruction{Tag: "EXIT_SCOPE"}
+	instrs = append(instrs, exitScopeInstruction)
+	doneInstruction := DONEInstruction{Tag: "DONE"}
+	instrs = append(instrs, doneInstruction)
 	return instrs
 }
