@@ -2,7 +2,6 @@ package compiler
 
 import (
 	"cs4215/goophy/pkg/ast"
-	"fmt"
 	"strconv"
 )
 
@@ -117,7 +116,7 @@ func Compile_statement(statement ast.Statement, instrs []Instruction) []Instruct
 		} else {*/
 		resetInstruction := RESETInstruction{Tag: "RESET"}
 		instrs = append(instrs, resetInstruction)
-	/*case "LBRACE":
+	/*case "{LBRACE}":
 	blkStatement := statement.(*ast.BlockStatement)
 	locals := scan(blkStatement.Statements)
 	enterScopeInstruction := ENTERSCOPEInstruction{Tag: "ENTER_SCOPE", syms: locals}
@@ -139,7 +138,6 @@ func Compile_statement(statement ast.Statement, instrs []Instruction) []Instruct
 // WIP
 func Compile_expression(expression ast.Expression, instrs []Instruction) []Instruction {
 	token := expression.GetToken()
-	fmt.Println(token.Type)
 	switch token.Type {
 	case "ILLEGAL":
 		panic("ILLEGAL EXPRESSION ENCOUNTERED")
