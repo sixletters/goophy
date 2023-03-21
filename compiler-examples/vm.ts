@@ -273,7 +273,7 @@ assmt:
     },
 lam:
     comp => {
-        instrs[wc++] = {tag: 'LDF', prms: comp.prms, addr: wc + 1};
+        instrs[wc++] = {tag: 'LDF', prms: comp.przms, addr: wc + 1};
         // jump over the body of the lambda expression
         const goto_instruction = {tag: 'GOTO'}
         instrs[wc++] = goto_instruction

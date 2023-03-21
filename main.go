@@ -85,14 +85,15 @@ func main() {
 		panic(err)
 	}
 	input := `
-	let x = 10 - 6 - 5 * 10; x;
+	1;
+	let x = "12";
 	`
 	l := lexer.NewLexer(input)
 	p := parser.New(l)
 	program := p.ParseProgram()
+	fmt.Println(program.String())
+	fmt.Println(compiler.Compile(*program))
 	instrs := compiler.Compile(*program)
-	// fmt.Println(compiler.Compile(*program))
-	// fmt.Println(program.String())
 	val := machine.Run(instrs)
 	fmt.Println(val)
 	//thread pool / when u need a concurrent thread create one

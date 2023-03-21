@@ -103,7 +103,7 @@ func Compile_statement(statement ast.Statement, instrs []Instruction) []Instruct
 		assignStatement := statement.(*ast.LetStatement)
 		newInstrs := Compile_expression(assignStatement.Value, instrs)
 		instrs = append(instrs, newInstrs...)
-		assignInstruction := ASSIGNInstruction{Tag: "ASSIGN", sym: assignStatement.Name.Value}
+		assignInstruction := ASSIGNInstruction{Tag: "ASSIGN", Sym: assignStatement.Name.Value}
 		instrs = append(instrs, assignInstruction)
 	case "RETURN":
 		returnStatement := statement.(*ast.ReturnStatement)
@@ -116,17 +116,41 @@ func Compile_statement(statement ast.Statement, instrs []Instruction) []Instruct
 		} else {*/
 		resetInstruction := RESETInstruction{Tag: "RESET"}
 		instrs = append(instrs, resetInstruction)
-	/*case "{LBRACE}":
-	blkStatement := statement.(*ast.BlockStatement)
-	locals := scan(blkStatement.Statements)
-	enterScopeInstruction := ENTERSCOPEInstruction{Tag: "ENTER_SCOPE", syms: locals}
-	instrs = append(instrs, enterScopeInstruction)
-	for i, statement := range blkStatement.Statements {
-		newInstrs := Compile_statement(statement, instrs)
-		instrs = append(instrs, newInstrs...)
-	}
-	exitScopeInstruction := EXITSCOPEInstruction{Tag: "EXIT_SCOPE"}
-	instrs = append(instrs, exitScopeInstruction)*/
+	case "{LBRACE}":
+
+	/*	blkStatement := statement.(*ast.BlockStatement)
+		locals := scan(blkStatement.Statements)
+		enterScopeInstruction := ENTERSCOPEInstruction{Tag: "ENTER_SCOPE", Syms: locals}
+		instrs = append(instrs, enterScopeInstruction)
+		for i, statement := range blkStatement.Statements {
+			newInstrs := Compile_statement(statement, instrs)
+			instrs = append(instrs, newInstrs...)
+		}
+		exitScopeInstruction := EXITSCOPEInstruction{Tag: "EXIT_SCOPE"}
+		instrs = append(instrs, exitScopeInstruction)
+	*/
+	case "FUNCTION":
+		// functionStatement := statement.(*ast.FunctionStatement)
+		// ldfInstruction := LDFInstruction{Tag: "LDF", Prms: functionStatement.Parameters, Addr: len(instrs)}
+		// instrs = append(instrs, ldfInstruction)
+		// newInstrs := Compile_expression(functionStatement.Value, instrs)
+		// gotoInstruction := GOTOInstruction{Tag: "GOTO", Addr: len(instrs)}
+		// instrs = append(instrs, assignInstruction)
+		// instrs = append(instrs, newInstrs...)
+		// assignInstruction := ASSIGNInstruction{Tag: "ASSIGN", Sym: token.Literal}
+		// instrs = append(instrs, assignInstruction)
+	case "IF":
+		// condStatement := statement.(*ast.CondStatement)
+		// predInstrs := Compile_expression(condStatement.Predicate, []Instruction{})
+		// instrs = append(instrs, predInstrs...)
+		// constantInstrs := Compile_expression(condStatement.Constant, []Instruction{})
+		// jofInstruction := JOFInstruction{Tag: "JOF", Addr: len(instrs)}
+		// alternateInstrs := Compile_expression(condStatement.Alternate, []Instruction{})
+		// gotoInstruction := GOTOInstruction{Tag: "GOTO", Addr: len(instrs)}
+		// instrs = append(instrs, jofInstruction)
+		// instrs = append(instrs, constantInstrs...)
+		// instrs = append(instrs, gotoInstruction)
+		// instrs = append(instrs, alternateInstrs...)
 	default:
 		expressionStatement := statement.(*ast.ExpressionStatement)
 		newInstrs := Compile_expression(expressionStatement.Expression, instrs)
@@ -156,7 +180,7 @@ func Compile_expression(expression ast.Expression, instrs []Instruction) []Instr
 		val, _ := strconv.Atoi(token.Literal)
 		ldcnInstruction := LDCNInstruction{Tag: "LDCN", Val: val}
 		instrs = append(instrs, ldcnInstruction)
-	case "+", "-", "*", "/", "<=", ">", "==", "!=": /*tokens have not included modulo*/
+	case "+", "*", "/", "<=", ">", "==", "!=": /*tokens have not included modulo*/
 		expr := expression.(*ast.InfixExpression)
 		newInstrs := Compile_expression(expr.Left, []Instruction{})
 		instrs = append(instrs, newInstrs...)
@@ -164,7 +188,23 @@ func Compile_expression(expression ast.Expression, instrs []Instruction) []Instr
 		instrs = append(instrs, newerInstrs...)
 		binopInstruction := BINOPInstruction{Tag: "BINOP", Sym: BINOPS(token.Literal)}
 		instrs = append(instrs, binopInstruction)
-	case "BANG":
+	case "-":
+		// both negative number and binop minus is handled here
+		expr, ok := expression.(*ast.PrefixExpression)
+		if ok {
+			newerInstrs := Compile_expression(expr.Right, []Instruction{})
+			instrs = append(instrs, newerInstrs...)
+			unopInstruction := UNOPInstruction{Tag: "UNOP", Sym: "-unary"}
+			instrs = append(instrs, unopInstruction)
+		} else {
+			expr := expression.(*ast.InfixExpression)
+			newInstrs := Compile_expression(expr.Left, []Instruction{})
+			instrs = append(instrs, newInstrs...)
+			newerInstrs := Compile_expression(expr.Right, []Instruction{})
+			instrs = append(instrs, newerInstrs...)
+			binopInstruction := BINOPInstruction{Tag: "BINOP", Sym: BINOPS(token.Literal)}
+			instrs = append(instrs, binopInstruction)
+		}
 	}
 	return instrs
 }
@@ -172,7 +212,7 @@ func Compile_expression(expression ast.Expression, instrs []Instruction) []Instr
 func Compile(program ast.Program) []Instruction {
 	instrs := make([]Instruction, 0)
 	locals := scan(program.Statements)
-	enterScopeInstruction := ENTERSCOPEInstruction{Tag: "ENTER_SCOPE", syms: locals}
+	enterScopeInstruction := ENTERSCOPEInstruction{Tag: "ENTER_SCOPE", Syms: locals}
 	instrs = append(instrs, enterScopeInstruction)
 	for i, statement := range program.Statements {
 		instrs = append(instrs, Compile_statement(statement, []Instruction{})...)

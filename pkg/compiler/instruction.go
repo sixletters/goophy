@@ -141,7 +141,7 @@ func (gotoa GOTOInstruction) GetAddr() int {
 // Enter Scope
 type ENTERSCOPEInstruction struct {
 	Tag  string
-	syms []string
+	Syms []string
 }
 
 func (enterScope ENTERSCOPEInstruction) GetTag() string {
@@ -149,7 +149,7 @@ func (enterScope ENTERSCOPEInstruction) GetTag() string {
 }
 
 func (enterScope ENTERSCOPEInstruction) GetSyms() []string {
-	return enterScope.syms
+	return enterScope.Syms
 }
 
 // Exit Scope
@@ -163,7 +163,7 @@ func (exitScope EXITSCOPEInstruction) GetTag() string {
 
 type ASSIGNInstruction struct {
 	Tag string
-	sym string
+	Sym string
 }
 
 func (assign ASSIGNInstruction) GetTag() string {
@@ -171,13 +171,13 @@ func (assign ASSIGNInstruction) GetTag() string {
 }
 
 func (assign ASSIGNInstruction) GetSym() string {
-	return assign.sym
+	return assign.Sym
 }
 
 // LoaD Function
 type LDFInstruction struct {
 	Tag  string
-	prms []string
+	Prms []string
 	Addr int
 }
 
@@ -186,7 +186,7 @@ func (ldf LDFInstruction) GetTag() string {
 }
 
 func (ldf LDFInstruction) GetPrms() []string {
-	return ldf.prms
+	return ldf.Prms
 }
 
 func (ldf LDFInstruction) GetAddr() int {
