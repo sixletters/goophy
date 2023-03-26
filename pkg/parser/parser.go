@@ -65,8 +65,8 @@ func New(l *lexer.Lexer) *Parser {
 	p.registerPrefix(token.TRUE, p.parseBoolean)
 	p.registerPrefix(token.FALSE, p.parseBoolean)
 	p.registerPrefix(token.LPAREN, p.parseGroupedExpression)
-	// p.registerPrefix(token.IF, p.parseIfExpression)
-	// p.registerPrefix(token.FUNCTION, p.parseFunctionLiteral)
+	p.registerPrefix(token.IF, p.parseIfExpression)
+	p.registerPrefix(token.FUNCTION, p.parseFunctionLiteral)
 
 	p.infixParseFns = make(map[token.TokenType]infixParseFn)
 	p.registerInfix(token.PLUS, p.parseInfixExpression)
@@ -78,7 +78,7 @@ func New(l *lexer.Lexer) *Parser {
 	p.registerInfix(token.LT, p.parseInfixExpression)
 	p.registerInfix(token.GT, p.parseInfixExpression)
 
-	// p.registerInfix(token.LPAREN, p.parseCallExpression)
+	p.registerInfix(token.LPAREN, p.parseCallExpression)
 
 	// Read two tokens, so curToken and peekToken are both set
 	p.nextToken()
@@ -301,73 +301,73 @@ func (p *Parser) parseGroupedExpression() ast.Expression {
 	return exp
 }
 
-// func (p *Parser) parseIfExpression() ast.Expression {
-// 	expression := &ast.IfExpression{Token: p.curToken}
+func (p *Parser) parseIfExpression() ast.Expression {
+	expression := &ast.IfExpression{Token: p.curToken}
 
-// 	if !p.expectPeek(token.LPAREN) {
-// 		return nil
-// 	}
+	if !p.expectPeek(token.LPAREN) {
+		return nil
+	}
 
-// 	p.nextToken()
-// 	expression.Condition = p.parseExpression(LOWEST)
+	p.nextToken()
+	expression.Condition = p.parseExpression(LOWEST)
 
-// 	if !p.expectPeek(token.RPAREN) {
-// 		return nil
-// 	}
+	if !p.expectPeek(token.RPAREN) {
+		return nil
+	}
 
-// 	if !p.expectPeek(token.LBRACE) {
-// 		return nil
-// 	}
+	if !p.expectPeek(token.LBRACE) {
+		return nil
+	}
 
-// 	expression.Consequence = p.parseBlockStatement()
+	expression.IfBlock = p.parseBlockStatement()
 
-// 	if p.peekTokenIs(token.ELSE) {
-// 		p.nextToken()
+	if p.peekTokenIs(token.ELSE) {
+		p.nextToken()
 
-// 		if !p.expectPeek(token.LBRACE) {
-// 			return nil
-// 		}
+		if !p.expectPeek(token.LBRACE) {
+			return nil
+		}
 
-// 		expression.Alternative = p.parseBlockStatement()
-// 	}
+		expression.ElseBlock = p.parseBlockStatement()
+	}
 
-// 	return expression
-// }
+	return expression
+}
 
-// func (p *Parser) parseBlockStatement() *ast.BlockStatement {
-// 	block := &ast.BlockStatement{Token: p.curToken}
-// 	block.Statements = []ast.Statement{}
+func (p *Parser) parseBlockStatement() *ast.BlockStatement {
+	block := &ast.BlockStatement{Token: p.curToken}
+	block.Statements = []ast.Statement{}
 
-// 	p.nextToken()
+	p.nextToken()
 
-// 	for !p.curTokenIs(token.RBRACE) && !p.curTokenIs(token.EOF) {
-// 		stmt := p.parseStatement()
-// 		if stmt != nil {
-// 			block.Statements = append(block.Statements, stmt)
-// 		}
-// 		p.nextToken()
-// 	}
+	for !p.curTokenIs(token.RBRACE) && !p.curTokenIs(token.EOF) {
+		stmt := p.parseStatement()
+		if stmt != nil {
+			block.Statements = append(block.Statements, stmt)
+		}
+		p.nextToken()
+	}
 
-// 	return block
-// }
+	return block
+}
 
-// func (p *Parser) parseFunctionLiteral() ast.Expression {
-// 	lit := &ast.FunctionLiteral{Token: p.curToken}
+func (p *Parser) parseFunctionLiteral() ast.Expression {
+	lit := &ast.FunctionLiteral{Token: p.curToken}
 
-// 	if !p.expectPeek(token.LPAREN) {
-// 		return nil
-// 	}
+	if !p.expectPeek(token.LPAREN) {
+		return nil
+	}
 
-// 	lit.Parameters = p.parseFunctionParameters()
+	lit.Parameters = p.parseFunctionParameters()
 
-// 	if !p.expectPeek(token.LBRACE) {
-// 		return nil
-// 	}
+	if !p.expectPeek(token.LBRACE) {
+		return nil
+	}
 
-// 	lit.Body = p.parseBlockStatement()
+	lit.Body = p.parseBlockStatement()
 
-// 	return lit
-// }
+	return lit
+}
 
 func (p *Parser) parseFunctionParameters() []*ast.Identifier {
 	identifiers := []*ast.Identifier{}
@@ -396,11 +396,11 @@ func (p *Parser) parseFunctionParameters() []*ast.Identifier {
 	return identifiers
 }
 
-// func (p *Parser) parseCallExpression(function ast.Expression) ast.Expression {
-// 	exp := &ast.CallExpression{Token: p.curToken, Function: function}
-// 	exp.Arguments = p.parseCallArguments()
-// 	return exp
-// }
+func (p *Parser) parseCallExpression(function ast.Expression) ast.Expression {
+	exp := &ast.CallExpression{Token: p.curToken, Function: function}
+	exp.Arguments = p.parseCallArguments()
+	return exp
+}
 
 func (p *Parser) parseCallArguments() []ast.Expression {
 	args := []ast.Expression{}

@@ -3,6 +3,7 @@ package ast
 import (
 	"bytes"
 	"cs4215/goophy/pkg/token"
+	"strings"
 )
 
 type Node interface {
@@ -162,3 +163,87 @@ func (b *Boolean) expressionNode()       {}
 func (b *Boolean) TokenLiteral() string  { return b.Token.Literal }
 func (b *Boolean) String() string        { return b.Token.Literal }
 func (b *Boolean) GetToken() token.Token { return b.Token }
+
+type IfExpression struct {
+	Token     token.Token
+	Condition Expression
+	IfBlock   *BlockStatement
+	ElseBlock *BlockStatement
+}
+
+func (ie *IfExpression) expressionNode()       {}
+func (ie *IfExpression) TokenLiteral() string  { return ie.Token.Literal }
+func (ie *IfExpression) GetToken() token.Token { return ie.Token }
+func (ie *IfExpression) String() string {
+	var out bytes.Buffer
+	out.WriteString("if")
+	out.WriteString(ie.Condition.String())
+	out.WriteString(" ")
+	out.WriteString(ie.IfBlock.String())
+	if ie.ElseBlock != nil {
+		out.WriteString("else ")
+		out.WriteString(ie.ElseBlock.String())
+	}
+	return out.String()
+}
+
+type BlockStatement struct {
+	token.Token
+	Statements []Statement
+}
+
+func (bs *BlockStatement) statementNode()        {}
+func (bs *BlockStatement) TokenLiteral() string  { return bs.Token.Literal }
+func (bs *BlockStatement) GetToken() token.Token { return bs.Token }
+func (bs *BlockStatement) String() string {
+	var out bytes.Buffer
+	for _, s := range bs.Statements {
+		out.WriteString(s.String())
+	}
+	return out.String()
+}
+
+type FunctionLiteral struct {
+	Token      token.Token
+	Parameters []*Identifier
+	Body       *BlockStatement
+}
+
+func (fl *FunctionLiteral) expressionNode()       {}
+func (fl *FunctionLiteral) TokenLiteral() string  { return fl.Token.Literal }
+func (fl *FunctionLiteral) GetToken() token.Token { return fl.Token }
+func (fl *FunctionLiteral) String() string {
+	var out bytes.Buffer
+	params := []string{}
+	for _, p := range fl.Parameters {
+		params = append(params, p.String())
+	}
+	out.WriteString(fl.TokenLiteral())
+	out.WriteString("(")
+	out.WriteString(strings.Join(params, ", "))
+	out.WriteString(") ")
+	out.WriteString(fl.Body.String())
+	return out.String()
+}
+
+type CallExpression struct {
+	Token     token.Token // The '(' token
+	Function  Expression
+	Arguments []Expression
+}
+
+func (ce *CallExpression) expressionNode()       {}
+func (ce *CallExpression) TokenLiteral() string  { return ce.Token.Literal }
+func (ce *CallExpression) GetToken() token.Token { return ce.Token }
+func (ce *CallExpression) String() string {
+	var out bytes.Buffer
+	args := []string{}
+	for _, a := range ce.Arguments {
+		args = append(args, a.String())
+	}
+	out.WriteString(ce.Function.String())
+	out.WriteString("(")
+	out.WriteString(strings.Join(args, ", "))
+	out.WriteString(")")
+	return out.String()
+}
