@@ -28,7 +28,13 @@ var PC int
 //			OS.Push(instr.val)
 //	    },
 
-// helper functions to be relocated
+// Closures to wait for compiler
+type closure struct {
+	tag  string
+	prms []string //an array of symbols
+	addr int
+	env  EnvironmentStack
+}
 
 var microcode = map[string]func(instr compiler.Instruction){
 	"LDCN": func(instr compiler.Instruction) {
@@ -108,6 +114,31 @@ var microcode = map[string]func(instr compiler.Instruction){
 		PC++
 		E.Pop()
 	},
+	"LDF": func(instr compiler.Instruction) {
+		PC++
+		ldfInstr, ok := instr.(compiler.LDFInstruction)
+		if !ok {
+			panic("instr is not of type LDFInstruction")
+		}
+		closure_var := closure{
+			tag:  ldfInstr.GetTag(),
+			prms: ldfInstr.GetPrms(),
+			addr: ldfInstr.GetAddr(),
+			env:  E,
+		}
+		OS.Push(closure_var)
+	},
+	// "JOF": func(instr compiler.Instruction) {
+	// 	cond := OS.Pop()
+	// 	if _, ok := cond.(bool); ok {
+	// 		fmt.Println("i is a boolean")
+	// 		PC = cond.(bool) *
+	// 	} else {
+	// 		fmt.Println("i is not a boolean")
+	// 	}
+	// 	if(cond.(bool) == )
+	// 	PC = boolToInt(OS.Pop())*instr.addr + boolToInt(!OS.Peek())*(PC + 1 - instr.addr)
+	// },
 }
 
 // "UNOP": func(instr compiler.Instruction) {
