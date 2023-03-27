@@ -2,6 +2,7 @@ package compiler
 
 import (
 	"cs4215/goophy/pkg/ast"
+	"fmt"
 	"strconv"
 )
 
@@ -84,6 +85,8 @@ var builtin_mapping = map[string] func() {
 	"tokenize":  tokenize(),
 }*/
 
+var wc = 0
+
 func scan(statements []ast.Statement) []string {
 	var result []string
 	for _, statement := range statements {
@@ -98,11 +101,14 @@ func scan(statements []ast.Statement) []string {
 // not done yet for expression statement
 func Compile_statement(statement ast.Statement, instrs []Instruction) []Instruction {
 	token := statement.GetToken()
+	fmt.Println(token.Type)
+	fmt.Println(token.Literal)
 	switch token.Type {
 	case "LET":
 		assignStatement := statement.(*ast.LetStatement)
 		newInstrs := Compile_expression(assignStatement.Value, instrs)
 		instrs = append(instrs, newInstrs...)
+		wc += 1
 		assignInstruction := ASSIGNInstruction{Tag: "ASSIGN", Sym: assignStatement.Name.Value}
 		instrs = append(instrs, assignInstruction)
 	case "RETURN":
@@ -114,31 +120,22 @@ func Compile_statement(statement ast.Statement, instrs []Instruction) []Instruct
 		// I havent even do a normal call expresison yet so wait
 		if ok {
 		} else {*/
+		wc += 1
 		resetInstruction := RESETInstruction{Tag: "RESET"}
 		instrs = append(instrs, resetInstruction)
-	case "{LBRACE}":
-
-	/*	blkStatement := statement.(*ast.BlockStatement)
+	case "{":
+		blkStatement := statement.(*ast.BlockStatement)
 		locals := scan(blkStatement.Statements)
+		wc += 1
 		enterScopeInstruction := ENTERSCOPEInstruction{Tag: "ENTER_SCOPE", Syms: locals}
 		instrs = append(instrs, enterScopeInstruction)
-		for i, statement := range blkStatement.Statements {
-			newInstrs := Compile_statement(statement, instrs)
+		for _, statement := range blkStatement.Statements {
+			newInstrs := Compile_statement(statement, []Instruction{})
 			instrs = append(instrs, newInstrs...)
 		}
+		wc += 1
 		exitScopeInstruction := EXITSCOPEInstruction{Tag: "EXIT_SCOPE"}
 		instrs = append(instrs, exitScopeInstruction)
-	*/
-	case "FUNCTION":
-		// functionStatement := statement.(*ast.FunctionStatement)
-		// ldfInstruction := LDFInstruction{Tag: "LDF", Prms: functionStatement.Parameters, Addr: len(instrs)}
-		// instrs = append(instrs, ldfInstruction)
-		// newInstrs := Compile_expression(functionStatement.Value, instrs)
-		// gotoInstruction := GOTOInstruction{Tag: "GOTO", Addr: len(instrs)}
-		// instrs = append(instrs, assignInstruction)
-		// instrs = append(instrs, newInstrs...)
-		// assignInstruction := ASSIGNInstruction{Tag: "ASSIGN", Sym: token.Literal}
-		// instrs = append(instrs, assignInstruction)
 	case "IF":
 		// condStatement := statement.(*ast.CondStatement)
 		// predInstrs := Compile_expression(condStatement.Predicate, []Instruction{})
@@ -162,22 +159,25 @@ func Compile_statement(statement ast.Statement, instrs []Instruction) []Instruct
 // WIP
 func Compile_expression(expression ast.Expression, instrs []Instruction) []Instruction {
 	token := expression.GetToken()
-	// fmt.Println(token.Type)
 	switch token.Type {
 	case "ILLEGAL":
 		panic("ILLEGAL EXPRESSION ENCOUNTERED")
 	case "EOF":
+		wc += 1
 		doneInstruction := DONEInstruction{Tag: "DONE"}
 		instrs = append(instrs, doneInstruction)
 	case "IDENT":
+		wc += 1
 		ldsInstruction := LDSInstruction{Tag: "LDS", Sym: token.Literal}
 		instrs = append(instrs, ldsInstruction)
 	case "TRUE", "FALSE":
 		val, _ := strconv.ParseBool(token.Literal)
+		wc += 1
 		ldcbInstruction := LDCBInstruction{Tag: "LDCB", Val: val}
 		instrs = append(instrs, ldcbInstruction)
 	case "INT":
 		val, _ := strconv.Atoi(token.Literal)
+		wc += 1
 		ldcnInstruction := LDCNInstruction{Tag: "LDCN", Val: val}
 		instrs = append(instrs, ldcnInstruction)
 	case "+", "*", "/", "<=", ">", "==", "!=": /*tokens have not included modulo*/
@@ -186,6 +186,7 @@ func Compile_expression(expression ast.Expression, instrs []Instruction) []Instr
 		instrs = append(instrs, newInstrs...)
 		newerInstrs := Compile_expression(expr.Right, []Instruction{})
 		instrs = append(instrs, newerInstrs...)
+		wc += 1
 		binopInstruction := BINOPInstruction{Tag: "BINOP", Sym: BINOPS(token.Literal)}
 		instrs = append(instrs, binopInstruction)
 	case "-":
@@ -194,6 +195,7 @@ func Compile_expression(expression ast.Expression, instrs []Instruction) []Instr
 		if ok {
 			newerInstrs := Compile_expression(expr.Right, []Instruction{})
 			instrs = append(instrs, newerInstrs...)
+			wc += 1
 			unopInstruction := UNOPInstruction{Tag: "UNOP", Sym: "-unary"}
 			instrs = append(instrs, unopInstruction)
 		} else {
@@ -202,9 +204,23 @@ func Compile_expression(expression ast.Expression, instrs []Instruction) []Instr
 			instrs = append(instrs, newInstrs...)
 			newerInstrs := Compile_expression(expr.Right, []Instruction{})
 			instrs = append(instrs, newerInstrs...)
+			wc += 1
 			binopInstruction := BINOPInstruction{Tag: "BINOP", Sym: BINOPS(token.Literal)}
 			instrs = append(instrs, binopInstruction)
 		}
+	case "FUNCTION":
+		functionLiteral := expression.(*ast.FunctionLiteral)
+		wc += 1
+		ldfInstruction := LDFInstruction{Tag: "LDF", Prms: functionLiteral.Parameters, Addr: wc + 1}
+		instrs = append(instrs, ldfInstruction)
+		bodyInstrs := Compile_statement(functionLiteral.Body, []Instruction{})
+		wc += 1
+		gotoInstruction := GOTOInstruction{Tag: "GOTO", Addr: wc}
+		instrs = append(instrs, gotoInstruction)
+		instrs = append(instrs, bodyInstrs...)
+		wc += 1
+		assignInstruction := ASSIGNInstruction{Tag: "ASSIGN", Sym: token.Literal}
+		instrs = append(instrs, assignInstruction)
 	}
 	return instrs
 }
@@ -212,17 +228,21 @@ func Compile_expression(expression ast.Expression, instrs []Instruction) []Instr
 func Compile(program ast.Program) []Instruction {
 	instrs := make([]Instruction, 0)
 	locals := scan(program.Statements)
+	wc += 1
 	enterScopeInstruction := ENTERSCOPEInstruction{Tag: "ENTER_SCOPE", Syms: locals}
 	instrs = append(instrs, enterScopeInstruction)
 	for i, statement := range program.Statements {
 		instrs = append(instrs, Compile_statement(statement, []Instruction{})...)
 		if i != len(program.Statements)-1 {
+			wc += 1
 			popInstruction := POPInstruction{Tag: "POP"}
 			instrs = append(instrs, popInstruction)
 		}
 	}
+	wc += 1
 	exitScopeInstruction := EXITSCOPEInstruction{Tag: "EXIT_SCOPE"}
 	instrs = append(instrs, exitScopeInstruction)
+	wc += 1
 	doneInstruction := DONEInstruction{Tag: "DONE"}
 	instrs = append(instrs, doneInstruction)
 	return instrs
