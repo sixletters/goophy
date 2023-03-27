@@ -1,9 +1,5 @@
 package compiler
 
-import (
-	"cs4215/goophy/pkg/ast"
-)
-
 type Instruction interface {
 	GetTag() string
 	// instructionNode()
@@ -181,7 +177,7 @@ func (assign ASSIGNInstruction) GetSym() string {
 // LoaD Function
 type LDFInstruction struct {
 	Tag  string
-	Prms []*ast.Identifier
+	Prms []string
 	Addr int
 }
 
@@ -189,7 +185,7 @@ func (ldf LDFInstruction) GetTag() string {
 	return ldf.Tag
 }
 
-func (ldf LDFInstruction) GetPrms() []*ast.Identifier {
+func (ldf LDFInstruction) GetPrms() []string {
 	return ldf.Prms
 }
 

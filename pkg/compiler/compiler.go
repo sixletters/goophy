@@ -124,30 +124,20 @@ func Compile_statement(statement ast.Statement, instrs []Instruction) []Instruct
 		resetInstruction := RESETInstruction{Tag: "RESET"}
 		instrs = append(instrs, resetInstruction)
 	case "{":
+		//block is broken, i not sure how to fix the compile statement step in the loop for statements
 		blkStatement := statement.(*ast.BlockStatement)
 		locals := scan(blkStatement.Statements)
 		wc += 1
 		enterScopeInstruction := ENTERSCOPEInstruction{Tag: "ENTER_SCOPE", Syms: locals}
 		instrs = append(instrs, enterScopeInstruction)
 		for _, statement := range blkStatement.Statements {
+			fmt.Print(statement)
 			newInstrs := Compile_statement(statement, []Instruction{})
 			instrs = append(instrs, newInstrs...)
 		}
 		wc += 1
 		exitScopeInstruction := EXITSCOPEInstruction{Tag: "EXIT_SCOPE"}
 		instrs = append(instrs, exitScopeInstruction)
-	case "IF":
-		// condStatement := statement.(*ast.CondStatement)
-		// predInstrs := Compile_expression(condStatement.Predicate, []Instruction{})
-		// instrs = append(instrs, predInstrs...)
-		// constantInstrs := Compile_expression(condStatement.Constant, []Instruction{})
-		// jofInstruction := JOFInstruction{Tag: "JOF", Addr: len(instrs)}
-		// alternateInstrs := Compile_expression(condStatement.Alternate, []Instruction{})
-		// gotoInstruction := GOTOInstruction{Tag: "GOTO", Addr: len(instrs)}
-		// instrs = append(instrs, jofInstruction)
-		// instrs = append(instrs, constantInstrs...)
-		// instrs = append(instrs, gotoInstruction)
-		// instrs = append(instrs, alternateInstrs...)
 	default:
 		expressionStatement := statement.(*ast.ExpressionStatement)
 		newInstrs := Compile_expression(expressionStatement.Expression, instrs)
@@ -211,7 +201,11 @@ func Compile_expression(expression ast.Expression, instrs []Instruction) []Instr
 	case "FUNCTION":
 		functionLiteral := expression.(*ast.FunctionLiteral)
 		wc += 1
-		ldfInstruction := LDFInstruction{Tag: "LDF", Prms: functionLiteral.Parameters, Addr: wc + 1}
+		var parametersToString []string
+		for i, parameter := range functionLiteral.Parameters {
+			parametersToString[i] = parameter.Value
+		}
+		ldfInstruction := LDFInstruction{Tag: "LDF", Prms: parametersToString, Addr: wc + 1}
 		instrs = append(instrs, ldfInstruction)
 		bodyInstrs := Compile_statement(functionLiteral.Body, []Instruction{})
 		wc += 1
@@ -221,6 +215,31 @@ func Compile_expression(expression ast.Expression, instrs []Instruction) []Instr
 		wc += 1
 		assignInstruction := ASSIGNInstruction{Tag: "ASSIGN", Sym: token.Literal}
 		instrs = append(instrs, assignInstruction)
+	case "(":
+		callExpression := expression.(*ast.CallExpression)
+		functionInstrs := Compile_expression(callExpression.Function, []Instruction{})
+		instrs = append(instrs, functionInstrs...)
+		var length = 0
+		for _, arg := range callExpression.Arguments {
+			argumentInstrs := Compile_expression(arg, []Instruction{})
+			instrs = append(instrs, argumentInstrs...)
+			length += 1
+		}
+		wc += 1
+		callInstruction := CALLInstruction{Tag: "CALL", Arity: length}
+		instrs = append(instrs, callInstruction)
+	case "IF":
+		ifExpression := expression.(*ast.IfExpression)
+		condInstrs := Compile_expression(ifExpression.Condition, []Instruction{})
+		instrs = append(instrs, condInstrs...)
+		ifBlockInstrs := Compile_statement(ifExpression.IfBlock, []Instruction{})
+		jofInstruction := JOFInstruction{Tag: "JOF", Addr: wc}
+		elseBlockInstrs := Compile_statement(ifExpression.ElseBlock, []Instruction{})
+		gotoInstruction := GOTOInstruction{Tag: "GOTO", Addr: wc}
+		instrs = append(instrs, jofInstruction)
+		instrs = append(instrs, ifBlockInstrs...)
+		instrs = append(instrs, gotoInstruction)
+		instrs = append(instrs, elseBlockInstrs...)
 	}
 	return instrs
 }
