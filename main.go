@@ -15,10 +15,7 @@ func main() {
 		panic(err)
 	}
 	input := `
-	fn(x,y) {
-		let g = x + y
-		return g
-		} 
+	if true 1;
 	`
 	l := lexer.NewLexer(input)
 	p := parser.New(l)
