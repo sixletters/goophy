@@ -15,7 +15,10 @@ func main() {
 		panic(err)
 	}
 	input := `
-	if true 1;
+	let add = fn(x, y) {
+		x + y;
+	   };	   	
+	let result = add(five, ten);
 	`
 	l := lexer.NewLexer(input)
 	p := parser.New(l)

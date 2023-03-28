@@ -6,85 +6,6 @@ import (
 	"strconv"
 )
 
-/* idk how to fix this builtin mapping need change all the functions from JS to their GO equivalent maybe we do our own built-in mappings for what we want specifically
-var builtin_mapping = map[string] func() {
-	"display":   println(),
-	"get_time":  time.Now(),
-	"stringify": stringify(),
-	"error": func(x interface{}) interface{} {
-		PC = len(instrs) - 1
-		return x
-	},
-	"prompt":       prompt(),
-	"is_number":    is_number(),
-	"is_string":    is_string(),
-	"is_boolean":   is_boolean(),
-	"is_undefined": is_undefined(),
-	"parse_int":    parse_int(),
-	"char_at":      char_at(),
-	"math_abs":     math_abs(),
-	"math_acos":    math_acos(),
-	"math_acosh":   math_acosh(),
-	"math_asin":    math_asin(),
-	"math_asinh":   math_asinh(),
-	"math_atan":    math_atan(),
-	"math_atanh":   math_atanh(),
-	"math_atan2":   math_atan2(),
-	"math_ceil":    math_ceil(),
-	"math_cbrt":    math_cbrt(),
-	"math_expm1":   math_expm1(),
-	"math_clz32":   math_clz32(),
-	"math_cos":     math_cos(),
-	"math_cosh":    math_cosh(),
-	"math_exp":     math_exp(),
-	"math_floor":   math_floor(),
-	"math_fround":  math_fround(),
-	"math_hypot":   math_hypot(),
-	"math_imul":    math_imul(),
-	"math_log":     math_log(),
-	"math_log1p":   math_log1p(),
-	"math_log2":    math_log2(),
-	"math_log10":   math_log10(),
-	"math_max":     math_max(),
-	"math_min":     math_min(),
-	"math_pow":     math_pow(),
-	"math_random":  math_random(),
-	"math_round":   math_round(),
-	"math_sign":    math_sign(),
-	"math_sin":     math_sin(),
-	"math_sinh":    math_sinh(),
-	"math_sqrt":    math_sqrt(),
-	"math_tanh":    math_tanh(),
-	"math_trunc":   math_trunc(),
-	"pair":         pair(),
-	"is_pair":      is_pair(),
-	"head":         head(),
-	"tail":         tail(),
-	"is_null":      is_null(),
-	"set_head":     set_head(),
-	"set_tail":     set_tail(),
-	"array_length": array_length(),
-	"is_array":     is_array(),
-	"list":         list(),
-	"is_list":      is_list(),
-	"display_list": display_list(),
-	// from list libarary
-	"equal":          equal(),
-	"length":         length(),
-	"list_to_string": list_to_string(),
-	"reverse":        reverse(),
-	"append":         append(),
-	"member":         member(),
-	"remove":         remove(),
-	"remove_all":     remove_all(),
-	"enum_list":      enum_list(),
-	"list_ref":       list_ref(),
-	// misc
-	"draw_data": draw_data(),
-	"parse":     parse(),
-	"tokenize":  tokenize(),
-}*/
-
 var wc = 0
 
 func scan(statements []ast.Statement) []string {
@@ -149,6 +70,8 @@ func Compile_statement(statement ast.Statement, instrs []Instruction) []Instruct
 // WIP
 func Compile_expression(expression ast.Expression, instrs []Instruction) []Instruction {
 	token := expression.GetToken()
+	fmt.Println(token.Type)
+	fmt.Println(token.Literal)
 	switch token.Type {
 	case "ILLEGAL":
 		panic("ILLEGAL EXPRESSION ENCOUNTERED")
@@ -201,20 +124,21 @@ func Compile_expression(expression ast.Expression, instrs []Instruction) []Instr
 	case "FUNCTION":
 		functionLiteral := expression.(*ast.FunctionLiteral)
 		wc += 1
-		var parametersToString []string
-		for i, parameter := range functionLiteral.Parameters {
-			parametersToString[i] = parameter.Value
+		parametersToString := []string{}
+		for _, parameter := range functionLiteral.Parameters {
+			parametersToString = append(parametersToString, parameter.Value)
 		}
 		ldfInstruction := LDFInstruction{Tag: "LDF", Prms: parametersToString, Addr: wc + 1}
 		instrs = append(instrs, ldfInstruction)
 		bodyInstrs := Compile_statement(functionLiteral.Body, []Instruction{})
+		// WE SKIP an LDC instruction here because only in JS lambda returns undefined
+		wc += 1
+		resetInstruction := RESETInstruction{Tag: "RESET"}
 		wc += 1
 		gotoInstruction := GOTOInstruction{Tag: "GOTO", Addr: wc}
 		instrs = append(instrs, gotoInstruction)
 		instrs = append(instrs, bodyInstrs...)
-		wc += 1
-		assignInstruction := ASSIGNInstruction{Tag: "ASSIGN", Sym: token.Literal}
-		instrs = append(instrs, assignInstruction)
+		instrs = append(instrs, resetInstruction)
 	case "(":
 		callExpression := expression.(*ast.CallExpression)
 		functionInstrs := Compile_expression(callExpression.Function, []Instruction{})
