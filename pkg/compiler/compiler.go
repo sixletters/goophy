@@ -149,6 +149,8 @@ func Compile_statement(statement ast.Statement, instrs []Instruction) []Instruct
 // WIP
 func Compile_expression(expression ast.Expression, instrs []Instruction) []Instruction {
 	token := expression.GetToken()
+	fmt.Println(token.Type)
+	fmt.Println(token.Literal)
 	switch token.Type {
 	case "ILLEGAL":
 		panic("ILLEGAL EXPRESSION ENCOUNTERED")
@@ -201,20 +203,21 @@ func Compile_expression(expression ast.Expression, instrs []Instruction) []Instr
 	case "FUNCTION":
 		functionLiteral := expression.(*ast.FunctionLiteral)
 		wc += 1
-		var parametersToString []string
-		for i, parameter := range functionLiteral.Parameters {
-			parametersToString[i] = parameter.Value
+		parametersToString := []string{}
+		for _, parameter := range functionLiteral.Parameters {
+			parametersToString = append(parametersToString, parameter.Value)
 		}
 		ldfInstruction := LDFInstruction{Tag: "LDF", Prms: parametersToString, Addr: wc + 1}
 		instrs = append(instrs, ldfInstruction)
 		bodyInstrs := Compile_statement(functionLiteral.Body, []Instruction{})
+		// WE SKIP an LDC instruction here because only in JS lambda returns undefined
+		wc += 1
+		resetInstruction := RESETInstruction{Tag: "RESET"}
 		wc += 1
 		gotoInstruction := GOTOInstruction{Tag: "GOTO", Addr: wc}
 		instrs = append(instrs, gotoInstruction)
 		instrs = append(instrs, bodyInstrs...)
-		wc += 1
-		assignInstruction := ASSIGNInstruction{Tag: "ASSIGN", Sym: token.Literal}
-		instrs = append(instrs, assignInstruction)
+		instrs = append(instrs, resetInstruction)
 	case "(":
 		callExpression := expression.(*ast.CallExpression)
 		functionInstrs := Compile_expression(callExpression.Function, []Instruction{})
