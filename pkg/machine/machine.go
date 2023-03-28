@@ -36,6 +36,26 @@ type closure struct {
 	env  EnvironmentStack
 }
 
+// Helper for dynamically checking truthy in interface types
+func IsTruthy(x interface{}) bool {
+	switch v := x.(type) {
+	case bool:
+		return v
+	case string:
+		return v != ""
+	case int, int8, int16, int32, int64:
+		return v != 0
+	case uint, uint8, uint16, uint32, uint64:
+		return v != 0
+	case float32, float64:
+		return v != 0.0
+	case nil:
+		return false
+	default:
+		return false
+	}
+}
+
 var microcode = map[string]func(instr compiler.Instruction){
 	"LDCN": func(instr compiler.Instruction) {
 		ldcnInstr, ok := instr.(compiler.LDCNInstruction)
@@ -128,62 +148,61 @@ var microcode = map[string]func(instr compiler.Instruction){
 		}
 		OS.Push(closure_var)
 	},
-	// "JOF": func(instr compiler.Instruction) {
-	// 	cond := OS.Pop()
-	// 	if _, ok := cond.(bool); ok {
-	// 		fmt.Println("i is a boolean")
-	// 		PC = cond.(bool) *
-	// 	} else {
-	// 		fmt.Println("i is not a boolean")
-	// 	}
-	// 	if(cond.(bool) == )
-	// 	PC = boolToInt(OS.Pop())*instr.addr + boolToInt(!OS.Peek())*(PC + 1 - instr.addr)
-	// },
+	"JOF": func(instr compiler.Instruction) {
+		cond := OS.Pop()
+		jofInstr, ok := instr.(compiler.JOFInstruction)
+		if !ok {
+			panic("instr is not of type JOFInstruction")
+		}
+		if IsTruthy(cond) {
+			// fmt.Println("x is truthy")
+			PC = PC + 1
+		} else {
+			// fmt.Println("x is falsy")
+			PC = jofInstr.GetAddr()
+		}
+	},
+	"GOTO": func(instr compiler.Instruction) {
+		gotoInstr, ok := instr.(compiler.GOTOInstruction)
+		if !ok {
+			panic("instr is not of type GOTOInstruction")
+		}
+		PC = gotoInstr.GetAddr()
+	},
+	"CALL": func(instr compiler.Instruction) {
+		callInstr, ok := instr.(compiler.CALLInstruction)
+		if !ok {
+			panic("instr is not of type CALLInstruction")
+		}
+		arity := callInstr.GetArity()
+		args := make([]interface{}, arity)
+		for i := arity - 1; i >= 0; i-- {
+			args[i] = OS.Pop()
+		}
+		sf := OS.Pop().(*closure)
+		// Assume there are no built-ins for our vm first
+		// if sf.tag == "BUILTIN" {
+		// 	PC++
+		// 	push(OS, apply_builtin(sf.sym, args))
+		// 	return
+		// }
+		// RTS.Push(&frame{tag: "CALL_FRAME", addr: PC + 1, env: E})
+		E.Extend()
+		for _, i := range args {
+			i, ok := i.(string)
+			if !ok {
+				panic("instr is not of type CALLInstruction")
+			}
+			E.Set(i, args)
+		}
+		// E = extend(sf.prms, args, sf.env)
+		PC = sf.addr
+	},
 }
 
-// "UNOP": func(instr compiler.Instruction) {
-//     PC++
-// 	OS.Push(apply_unop(instr.sym, OS.Pop()))
-// },
-// "BINOP": func(instr *compiler.Instruction) {
-//     PC++
-// 	OS.Push(apply_binop(instr.sym, OS.Pop(), OS.Pop()))
-// },
-// "POP": func(instr *compiler.Instruction) {
-//     PC++
-//     OS.Pop()
-// },
-// "JOF": func(instr *compiler.Instruction) {
-//     PC = boolToInt(OS.Pop())*instr.addr + boolToInt(!OS.Peek())*(PC + 1 - instr.addr)
-// },
-// "GOTO": func(instr *compiler.Instruction) {
-//     PC = instr.addr
-// },
-// "ENTER_SCOPE": func(instr *compiler.Instruction) {
-//     PC++
-//     RTS.Push(&frame{tag: "BLOCK_FRAME", env: E})
-//     locals := instr.syms
-//     unassigneds := make([]interface{}, len(locals))
-//     for i := range unassigneds {
-//         unassigneds[i] = unassigned
-//     }
-//     E = extend(locals, unassigneds, E)
-// },
-// "EXIT_SCOPE": func(instr *compiler.Instruction) {
-//     PC++
-//     E = RTS.Pop().env
-// },
 // "LD": func(instr *compiler.Instruction) {
 //     PC++
 // 	OS.Push(lookup(instr.sym, E))
-// },
-// "ASSIGN": func(instr *compiler.Instruction) {
-//     PC++
-//     assign_value(instr.sym, OS.Peek(), E)
-// },
-// "LDF": func(instr *compiler.Instruction) {
-//     PC++
-// 	OS.Push({tag: "CLOSURE", prms: instr.prms, addr: instr.addr, env: E})
 // },
 // "CALL": func(instr *compiler.Instruction) {
 //     arity := instr.arity
