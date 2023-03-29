@@ -1,61 +1,37 @@
 package machine
 
-type EnvironmentFrame struct {
-	vars map[string]interface{}
+// Environment is a linked list of environments
+type Environment struct {
+	values map[string]interface{}
+	parent *Environment
 }
 
-func NewEnvironmentFrame() *EnvironmentFrame {
-	return &EnvironmentFrame{vars: make(map[string]interface{})}
+// NewEnvironment creates a new environment with an empty values map
+func NewEnvironment() *Environment {
+	return &Environment{values: make(map[string]interface{}), parent: nil}
 }
 
-func (ef *EnvironmentFrame) setVar(varName string, value interface{}) {
-	ef.vars[varName] = value
+// Extend creates a new child environment for the current environment
+func (env *Environment) Extend() *Environment {
+	child := &Environment{values: make(map[string]interface{}), parent: env}
+	return child
 }
 
-func (ef *EnvironmentFrame) getVar(varName string) (interface{}, bool) {
-	value, ok := ef.vars[varName]
-	return value, ok
+// Set sets the value of a variable in the current environment
+func (env *Environment) Set(name string, value interface{}) {
+	env.values[name] = value
 }
 
-type EnvironmentStack struct {
-	envFrames []EnvironmentFrame
-}
-
-func NewEnvironmentStack() *EnvironmentStack {
-	firstFrame := make([]EnvironmentFrame, 0)
-	return &EnvironmentStack{
-		envFrames: firstFrame,
+// Get returns the value of a variable in the current environment or its parent environments
+func (env *Environment) Get(name string) (interface{}, bool) {
+	value, ok := env.values[name]
+	if ok {
+		return value, true
+	} else if env.parent != nil {
+		return env.parent.Get(name)
+	} else {
+		return nil, false
 	}
-}
-
-func (env *EnvironmentStack) Extend() {
-	env.envFrames = append(env.envFrames, *NewEnvironmentFrame())
-}
-
-func (env *EnvironmentStack) Pop() *EnvironmentFrame {
-	if len(env.envFrames) == 0 {
-		return nil
-	}
-	popped := env.envFrames[len(env.envFrames)-1]
-	env.envFrames = env.envFrames[:len(env.envFrames)-1]
-	return &popped
-}
-
-func (env *EnvironmentStack) Set(varName string, value interface{}) {
-	envFrame := env.envFrames[len(env.envFrames)-1]
-	envFrame.setVar(varName, value)
-}
-
-func (env *EnvironmentStack) Get(varName string) interface{} {
-	for i := len(env.envFrames) - 1; i >= 0; i-- {
-		if val, ok := env.envFrames[i].getVar(varName); ok {
-			// return val, true
-			return val
-		}
-
-	}
-	// return nil, false
-	return nil
 }
 
 var unassigned = struct {

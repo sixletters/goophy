@@ -7,6 +7,7 @@ package machine
 // "cs4215/goophy/pkg/environment"
 import (
 	"cs4215/goophy/pkg/compiler"
+	"fmt"
 )
 
 // Parser
@@ -17,7 +18,7 @@ import (
 // RTS, OS, PC, E
 var RTS Stack
 var OS Stack
-var E EnvironmentStack
+var E *Environment
 var PC int
 
 // Microcode
@@ -33,7 +34,7 @@ type closure struct {
 	tag  string
 	prms []string //an array of symbols
 	addr int
-	env  EnvironmentStack
+	env  *Environment
 }
 
 // Helper for dynamically checking truthy in interface types
@@ -99,7 +100,11 @@ var microcode = map[string]func(instr compiler.Instruction){
 			panic("instr is not of type LDSInstruction")
 		}
 		PC++
-		OS.Push(E.Get(ldsInstr.GetSym())) //Note this pushes interface{} type into OS
+		val, ok := E.Get(ldsInstr.GetSym())
+		if !ok || val == nil {
+			panic(fmt.Sprintf("symbol %s not found", ldsInstr.GetSym()))
+		}
+		OS.Push(val) //Note this pushes interface{} type into OS
 	},
 	// throw error if cannot find value
 	"ASSIGN": func(instr compiler.Instruction) {
@@ -117,9 +122,9 @@ var microcode = map[string]func(instr compiler.Instruction){
 		if !ok {
 			panic("instr is not of type BINOPInstruction")
 		}
-		// RTS.Push(&stackFrame{tag: "BLOCK_FRAME", E: E}) //TODO: Include RTS back for OS, PC
+		RTS.Push(stackFrame{tag: "BLOCK_FRAME", E: E}) //TODO: Include RTS back for OS, PC
 		locals := enterscopeInstr.GetSyms()
-		E.Extend()
+		E = E.Extend()
 		for _, i := range locals {
 			E.Set(i, unassigned)
 		}
@@ -132,7 +137,11 @@ var microcode = map[string]func(instr compiler.Instruction){
 	},
 	"EXIT_SCOPE": func(instr compiler.Instruction) {
 		PC++
-		E.Pop()
+		sf, ok := RTS.Pop().(stackFrame)
+		if !ok {
+			panic("Frame on RTS is not of type stackFrame")
+		}
+		E = sf.E
 	},
 	"LDF": func(instr compiler.Instruction) {
 		PC++
@@ -167,6 +176,7 @@ var microcode = map[string]func(instr compiler.Instruction){
 		if !ok {
 			panic("instr is not of type GOTOInstruction")
 		}
+		fmt.Println(instr)
 		PC = gotoInstr.GetAddr()
 	},
 	"CALL": func(instr compiler.Instruction) {
@@ -186,17 +196,45 @@ var microcode = map[string]func(instr compiler.Instruction){
 		// 	push(OS, apply_builtin(sf.sym, args))
 		// 	return
 		// }
-		// RTS.Push(&frame{tag: "CALL_FRAME", addr: PC + 1, env: E})
+		RTS.Push(stackFrame{tag: "CALL_FRAME", E: E, PC: PC + 1})
 		E.Extend()
-		for _, i := range args {
-			i, ok := i.(string)
-			if !ok {
-				panic("instr is not of type CALLInstruction")
-			}
-			E.Set(i, args)
+		for index, val := range sf.prms {
+			E.Set(val, args[index])
 		}
-		// E = extend(sf.prms, args, sf.env)
 		PC = sf.addr
+	},
+	"TAIL_CALL": func(instr compiler.Instruction) {
+		tailcallInstr, ok := instr.(compiler.TAILCALLInstruction)
+		if !ok {
+			panic("instr is not of type TAILCALLInstruction")
+		}
+		arity := tailcallInstr.GetArity()
+		args := make([]interface{}, arity)
+		for i := arity - 1; i >= 0; i-- {
+			args[i] = OS.Pop()
+		}
+		sf := OS.Pop().(*closure)
+		//Assume no built in
+		// if sf.tag == "BUILTIN" {
+		// 	PC++
+		// 	// push(OS, apply_builtin(sf.sym, args))
+		// 	return
+		// }
+		E.Extend()
+		for index, val := range sf.prms {
+			E.Set(val, args[index])
+		}
+		PC = sf.addr
+	},
+	"RESET": func(instr compiler.Instruction) {
+		top_frame, ok := RTS.Pop().(stackFrame)
+		if !ok {
+			panic("Frame on RTS is not of type stackFrame")
+		}
+		if top_frame.tag == "CALL_FRAME" {
+			PC = top_frame.PC
+			E = top_frame.E
+		}
 	},
 }
 
@@ -257,30 +295,33 @@ var microcode = map[string]func(instr compiler.Instruction){
 // TODO: Check allowable types for return
 // func run(instrs) interface{} {
 func Run(instrs []compiler.Instruction) interface{} {
-	global_environment := NewEnvironmentStack() //TODO: Populate global environment with all built-ins
-	global_environment.Extend()
+	global_environment := NewEnvironment() //TODO: Populate global environment with all built-ins
+	global_environment.Extend()            //Redundant?
 	OS = Stack{}
 	PC = 0
-	E = *global_environment
+	E = global_environment
 	RTS = Stack{}
-	instrs_a := instrs
-	// for instrs_a[PC].GetTag() != "DONE" {
-	for _, i := range instrs_a {
-		// instr := instrs_a[PC]
-		// fmt.Println(PC)
-		// fmt.Println(instrs_a[PC].GetTag())
-		// microcode[instr.GetTag()](instr)
-		// fmt.Println(i.GetTag())
-		// instr, ok := microcode[i.GetTag()]
-		if i.GetTag() == "DONE" {
-			break
-		}
-		microcode[i.GetTag()](i)
-		// if !ok {
-		// 	continue
-		// }
-		// instr(i)
+	instrs_arr := instrs
+	for instrs_arr[PC].GetTag() != "DONE" {
+		fmt.Println(PC)
+		microcode[instrs_arr[PC].GetTag()](instrs_arr[PC])
 	}
+	// for _, i := range instrs_a {
+	// 	// instr := instrs_a[PC]
+	// 	fmt.Println(PC)
+	// 	// fmt.Println(instrs_a[PC].GetTag())
+	// 	// microcode[instr.GetTag()](instr)
+	// 	// fmt.Println(i.GetTag())
+	// 	// instr, ok := microcode[i.GetTag()]
+	// 	if i.GetTag() == "DONE" {
+	// 		break
+	// 	}
+	// 	microcode[i.GetTag()](i)
+	// 	// if !ok {
+	// 	// 	continue
+	// 	// }
+	// 	// instr(i)
+	// }
 	// fmt.Println(instrs[0])
 	return OS.Peek()
 }

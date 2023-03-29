@@ -4,70 +4,37 @@ import (
 	"testing"
 )
 
-func TestEnvironmentFrameSetAndGetVar(t *testing.T) {
-	ef := NewEnvironmentFrame()
-	ef.setVar("foo", 42)
-	val, ok := ef.getVar("foo")
-	if !ok {
-		t.Errorf("expected ok to be true but got false")
+func TestEnvironment(t *testing.T) {
+	// create a new environment and set a variable
+	env := NewEnvironment()
+	env.Set("x", 42)
+	env.Set("z", 80)
+
+	// check that the variable was set correctly
+	if val, ok := env.Get("x"); !ok || val != 42 {
+		t.Errorf("Failed to set variable x to 42")
 	}
-	if val != 42 {
-		t.Errorf("expected val to be 42 but got %v", val)
+	if val, ok := env.Get("z"); !ok || val != 80 {
+		t.Errorf("Failed to set variable z to 80")
+	}
+
+	// extend the environment and set a new variable
+	childEnv := env.Extend()
+	childEnv.Set("y", "hello")
+
+	// check that both variables are accessible in the child environment
+	if val, ok := childEnv.Get("x"); !ok || val != 42 {
+		t.Errorf("Failed to get variable x from child environment")
+	}
+	if val, ok := childEnv.Get("y"); !ok || val != "hello" {
+		t.Errorf("Failed to get variable y from child environment")
+	}
+
+	// check that the variables are not accessible in the parent environment
+	if _, ok := env.Get("y"); ok {
+		t.Errorf("Variable y should not be accessible in parent environment")
+	}
+	if _, ok := childEnv.Get("z"); ok {
+		t.Errorf("Variable z should not be accessible in child environment")
 	}
 }
-
-func TestEnvironmentStackExtend(t *testing.T) {
-	es := NewEnvironmentStack()
-	es.Extend()
-	if len(es.envFrames) != 1 {
-		t.Errorf("expected len(es.envFrames) to be 1 but got %d", len(es.envFrames))
-	}
-	es.Extend()
-	if len(es.envFrames) != 2 {
-		t.Errorf("expected len(es.envFrames) to be 2 but got %d", len(es.envFrames))
-	}
-}
-
-func TestEnvironmentStackPop(t *testing.T) {
-	es := NewEnvironmentStack()
-	es.Extend()
-	es.Extend()
-	es.Pop()
-	if len(es.envFrames) != 1 {
-		t.Errorf("expected len(es.envFrames) to be 1 but got %d", len(es.envFrames))
-	}
-}
-
-func TestEnvironmentStackSetAndGet(t *testing.T) {
-	es := NewEnvironmentStack()
-	es.Extend()
-	es.Set("foo", 42)
-	val, ok := es.Get("foo")
-	if !ok {
-		t.Errorf("expected ok to be true but got false")
-	}
-	if val != 42 {
-		t.Errorf("expected val to be 42 but got %v", val)
-	}
-}
-
-func TestEnvironmentStackGetNotFound(t *testing.T) {
-	es := NewEnvironmentStack()
-	es.Extend()
-	val, ok := es.Get("foo")
-	if ok {
-		t.Errorf("expected ok to be false but got true")
-	}
-	if val != nil {
-		t.Errorf("expected val to be nil but got %v", val)
-	}
-}
-
-func TestPopWhenEmpty(t *testing.T) {
-	env := NewEnvironmentStack()
-	env.Pop()
-	if len(env.envFrames) != 0 {
-		t.Errorf("Expected length of environment stack to be 0, but got %d", len(env.envFrames))
-	}
-}
-
