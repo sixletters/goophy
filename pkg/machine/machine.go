@@ -176,7 +176,7 @@ var microcode = map[string]func(instr compiler.Instruction){
 		if !ok {
 			panic("instr is not of type GOTOInstruction")
 		}
-		fmt.Println(instr)
+		// fmt.Println(instr)
 		PC = gotoInstr.GetAddr()
 	},
 	"CALL": func(instr compiler.Instruction) {
@@ -189,7 +189,7 @@ var microcode = map[string]func(instr compiler.Instruction){
 		for i := arity - 1; i >= 0; i-- {
 			args[i] = OS.Pop()
 		}
-		sf := OS.Pop().(*closure)
+		sf := OS.Pop().(closure)
 		// Assume there are no built-ins for our vm first
 		// if sf.tag == "BUILTIN" {
 		// 	PC++
@@ -303,9 +303,11 @@ func Run(instrs []compiler.Instruction) interface{} {
 	RTS = Stack{}
 	instrs_arr := instrs
 	for instrs_arr[PC].GetTag() != "DONE" {
-		fmt.Println(PC)
+		// fmt.Println(instrs_arr[PC])
+		// fmt.Println(PC)
 		microcode[instrs_arr[PC].GetTag()](instrs_arr[PC])
 	}
+	return OS.Peek()
 	// for _, i := range instrs_a {
 	// 	// instr := instrs_a[PC]
 	// 	fmt.Println(PC)
@@ -323,7 +325,7 @@ func Run(instrs []compiler.Instruction) interface{} {
 	// 	// instr(i)
 	// }
 	// fmt.Println(instrs[0])
-	return OS.Peek()
+	// return OS.Peek()
 }
 
 // Testing for Virtual Machine

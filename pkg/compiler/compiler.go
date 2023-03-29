@@ -22,8 +22,8 @@ func scan(statements []ast.Statement) []string {
 // not done yet for expression statement
 func Compile_statement(statement ast.Statement, instrs []Instruction) []Instruction {
 	token := statement.GetToken()
-	fmt.Println(token.Type)
-	fmt.Println(token.Literal)
+	// fmt.Println(token.Type)
+	// fmt.Println(token.Literal)
 	switch token.Type {
 	case "LET":
 		assignStatement := statement.(*ast.LetStatement)
@@ -70,8 +70,8 @@ func Compile_statement(statement ast.Statement, instrs []Instruction) []Instruct
 // WIP
 func Compile_expression(expression ast.Expression, instrs []Instruction) []Instruction {
 	token := expression.GetToken()
-	fmt.Println(token.Type)
-	fmt.Println(token.Literal)
+	// fmt.Println(token.Type)
+	// fmt.Println(token.Literal)
 	switch token.Type {
 	case "ILLEGAL":
 		panic("ILLEGAL EXPRESSION ENCOUNTERED")
