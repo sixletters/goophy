@@ -303,7 +303,7 @@ func Run(instrs []compiler.Instruction) interface{} {
 	RTS = Stack{}
 	instrs_arr := instrs
 	for instrs_arr[PC].GetTag() != "DONE" {
-		// fmt.Println(instrs_arr[PC])
+		fmt.Println(instrs_arr[PC])
 		// fmt.Println(PC)
 		microcode[instrs_arr[PC].GetTag()](instrs_arr[PC])
 	}

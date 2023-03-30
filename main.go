@@ -16,15 +16,33 @@ func main() {
 		panic(err)
 	}
 	input := `
-	let add = fn(x, y) {
+	let z = 5;
+	let z = 10;
+	let urmom = fn(x,y){
 		x + y;
-	   };	   	
-	let result = add(5, 10);
+	}
+	if (z == 5){
+		let z = 10;
+		if (z == 10){
+			let z = 48;
+		}
+	}
+	z;
 	`
+	// "+" | "-" | "*" | "/" | "<" | ">" | "==" | "!="
+	// "!" | "-"
+	// let add = fn(x, y) {
+	// 	x < y;
+	//    };
+	// let five = 5;
+	// let ten =10;
+	// let result = add(five, ten);
+	// result;
 	l := lexer.NewLexer(input)
 	p := parser.New(l)
 	program := p.ParseProgram()
 	instrs := compiler.Compile(*program)
+	fmt.Println(compiler.Compile(*program))
 	res := machine.Run(instrs)
 	fmt.Println(res)
 	// fmt.Println(instrs)

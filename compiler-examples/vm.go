@@ -1,10 +1,10 @@
 package main
 
-import(
-	"fmt"
-	"errors"
+import (
 	"encoding/json" // To convert array in string form back into array
+	"errors"
 )
+
 // Parser
 // Microcode
 // Scheduler
@@ -12,7 +12,7 @@ import(
 type Stack []interface{}
 
 func (s *Stack) Push(value interface{}) {
-  	*s = append(*s, value)
+	*s = append(*s, value)
 }
 
 func (s *Stack) Pop() (interface{}, error) {
@@ -26,12 +26,12 @@ func (s *Stack) Pop() (interface{}, error) {
 }
 
 func (s *Stack) IsEmpty() bool {
-  	return len(*s) == 0
+	return len(*s) == 0
 }
 
 type Environment struct {
-    Variables map[string]interface{}
-    Functions map[string]interface{}
+	Variables map[string]interface{}
+	Functions map[string]interface{}
 }
 
 // func run(prog) int {
@@ -63,12 +63,12 @@ func main() {
 		panic(err)
 	}
 	// instrs := json.Unmarshal([]byte(str), &arr)//input instruction array here
-	fmt.Println(arr)
-	u need an operand stack aka stash
-	u need a stack for the commands <- instruction aka agenda
-	^ need handle using array operations
-	u also need current environment <- for evaluation of names/variables 
-	lambda and apply is fking hard, need to consider the parameters wrt to current environment and leave mark so that dont fully execute if theres an ifelse block
-	builtin instructions are special, like math stuff <- we slap these in the global frame under builtin mapping
-	lookup needed and applied when the top of agenda is a name
+	// fmt.Println(arr)
+	// u need an operand stack aka stash
+	// u need a stack for the commands <- instruction aka agenda
+	// ^ need handle using array operations
+	// u also need current environment <- for evaluation of names/variables
+	// lambda and apply is fking hard, need to consider the parameters wrt to current environment and leave mark so that dont fully execute if theres an ifelse block
+	// builtin instructions are special, like math stuff <- we slap these in the global frame under builtin mapping
+	// lookup needed and applied when the top of agenda is a name
 }

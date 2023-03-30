@@ -53,6 +53,7 @@ func Compile_statement(statement ast.Statement, instrs []Instruction) []Instruct
 		instrs = append(instrs, enterScopeInstruction)
 		for _, statement := range blkStatement.Statements {
 			fmt.Print(statement)
+			// fmt.Println(len(blkStatement.Statements))
 			newInstrs := Compile_statement(statement, []Instruction{})
 			instrs = append(instrs, newInstrs...)
 		}
@@ -157,13 +158,21 @@ func Compile_expression(expression ast.Expression, instrs []Instruction) []Instr
 		condInstrs := Compile_expression(ifExpression.Condition, []Instruction{})
 		instrs = append(instrs, condInstrs...)
 		ifBlockInstrs := Compile_statement(ifExpression.IfBlock, []Instruction{})
+		wc += 1
 		jofInstruction := JOFInstruction{Tag: "JOF", Addr: wc}
-		elseBlockInstrs := Compile_statement(ifExpression.ElseBlock, []Instruction{})
-		gotoInstruction := GOTOInstruction{Tag: "GOTO", Addr: wc}
+		var elseBlockInstrs []Instruction
+		var gotoInstruction GOTOInstruction
+		if ifExpression.ElseBlock != nil {
+			elseBlockInstrs = Compile_statement(ifExpression.ElseBlock, []Instruction{})
+			wc += 1
+			gotoInstruction = GOTOInstruction{Tag: "GOTO", Addr: wc}
+		}
 		instrs = append(instrs, jofInstruction)
 		instrs = append(instrs, ifBlockInstrs...)
-		instrs = append(instrs, gotoInstruction)
-		instrs = append(instrs, elseBlockInstrs...)
+		if ifExpression.ElseBlock != nil {
+			instrs = append(instrs, gotoInstruction)
+			instrs = append(instrs, elseBlockInstrs...)
+		}
 	}
 	return instrs
 }
