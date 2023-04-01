@@ -1,1 +1,12 @@
-10+20*30
+let z = 5;
+let z = 10;
+let urmom = fn(x,y){
+    x + y;
+}
+if (z == 5){
+    let z = 10;
+    if (z == 10){
+        let z = 48;
+    }
+}
+z;

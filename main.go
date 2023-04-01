@@ -6,6 +6,8 @@ import (
 	"cs4215/goophy/pkg/machine"
 	"cs4215/goophy/pkg/parser"
 	"fmt"
+	"io/ioutil"
+	"os"
 	"os/user"
 )
 
@@ -15,39 +17,24 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	input := `
-	let z = 5;
-	let z = 10;
-	let urmom = fn(x,y){
-		x + y;
+
+	if len(os.Args) < 2 {
+		panic("There is no input file name given")
 	}
-	if (z == 5){
-		let z = 10;
-		if (z == 10){
-			let z = 48;
-		}
+	fileName := os.Args[1]
+	fmt.Println(fileName)
+	data, err := ioutil.ReadFile("/Users/harrismaung/Desktop/mylearning/goophy/test.txt")
+	if err != nil {
+		fmt.Println("File reading error", err)
+		return
 	}
-	z;
-	`
-	// "+" | "-" | "*" | "/" | "<" | ">" | "==" | "!="
-	// "!" | "-"
-	// let add = fn(x, y) {
-	// 	x < y;
-	//    };
-	// let five = 5;
-	// let ten =10;
-	// let result = add(five, ten);
-	// result;
-	l := lexer.NewLexer(input)
+
+	l := lexer.NewLexer(string(data))
 	p := parser.New(l)
 	program := p.ParseProgram()
 	instrs := compiler.Compile(*program)
-	fmt.Println(compiler.Compile(*program))
+	machine := machine.NewMachine().Init()
 	res := machine.Run(instrs)
 	fmt.Println(res)
-	// fmt.Println(instrs)
-	// fmt.Println(program.String())
-	// fmt.Println(compiler.Compile(*program))
-	// fmt.Printf("Feel free to type in commands\n")
 	//repl.Start(os.Stdin, os.Stdout)
 }
