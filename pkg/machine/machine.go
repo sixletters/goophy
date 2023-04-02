@@ -8,6 +8,7 @@ package machine
 import (
 	"cs4215/goophy/pkg/compiler"
 	"fmt"
+	"reflect"
 )
 
 // Parser
@@ -36,10 +37,27 @@ type closure struct {
 	addr int
 	env  *Environment
 }
+type builtinType struct {
+	tag   string
+	sym   string
+	arity int
+}
 
 func NewMachine() *Machine {
 	global_environment := NewEnvironment() //TODO: Populate global environment with all built-ins
-	global_environment.Extend()            //Redundant?
+	for key, fn := range builtin_mapping {
+		fnType := reflect.TypeOf(fn)
+		value := builtinType{
+			tag:   "BUILTIN",
+			sym:   key,
+			arity: fnType.NumIn(),
+		}
+		global_environment.Set(key, value)
+	}
+	// fmt.Println(global_environment.Get("print"))
+	// apply_builtin("print", "1+2")
+	// fmt.Print(global_environment)
+	global_environment.Extend() //Redundant?
 	return &Machine{
 		OS:  Stack{},
 		PC:  0,
@@ -181,19 +199,38 @@ func (m *Machine) Init() *Machine {
 			for i := arity - 1; i >= 0; i-- {
 				args[i] = m.OS.Pop()
 			}
-			sf := m.OS.Pop().(closure)
+			sf := m.OS.Pop() //Can either be closure or builtin
+			sf_closure, ok := sf.(closure)
+			if ok {
+				m.RTS.Push(stackFrame{tag: "CALL_FRAME", E: m.E, PC: m.PC + 1})
+				m.E.Extend()
+				for index, val := range sf_closure.prms {
+					m.E.Set(val, args[index])
+				}
+				m.PC = sf_closure.addr
+				return
+			}
+			sf_builtin, ok := sf.(builtinType)
+			if ok {
+				m.PC++
+				result, ok := apply_builtin(sf_builtin.sym, args)
+				if ok != nil {
+					m.OS.Push(result)
+				}
+
+			}
 			// Assume there are no built-ins for our vm first
 			// if sf.tag == "BUILTIN" {
 			// 	PC++
 			// 	push(OS, apply_builtin(sf.sym, args))
 			// 	return
 			// }
-			m.RTS.Push(stackFrame{tag: "CALL_FRAME", E: m.E, PC: m.PC + 1})
-			m.E.Extend()
-			for index, val := range sf.prms {
-				m.E.Set(val, args[index])
-			}
-			m.PC = sf.addr
+			// function, found := m.E.Get("print")
+			// if found {
+			// 	m.PC++
+			// 	function.(func(interface{}))("hello")
+			// }
+
 		},
 		"TAIL_CALL": func(instr compiler.Instruction) {
 			tailcallInstr, ok := instr.(compiler.TAILCALLInstruction)
@@ -290,7 +327,7 @@ func (m *Machine) Init() *Machine {
 // func run(instrs) interface{} {
 func (m *Machine) Run(instrs []compiler.Instruction) interface{} {
 	for instrs[m.PC].GetTag() != "DONE" {
-		fmt.Println(instrs[m.PC])
+		// fmt.Println(instrs[m.PC])
 		m.microcode[instrs[m.PC].GetTag()](instrs[m.PC])
 	}
 	return m.OS.Peek()

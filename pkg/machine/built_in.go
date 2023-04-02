@@ -1,5 +1,46 @@
 package machine
 
+import (
+	"fmt"
+)
+
+var builtin_mapping = map[string]interface{}{
+	"print":   fmt.Print,
+	"println": fmt.Println,
+	// "println": func(arg []interface{}) {
+	// 	fmt.Println(arg)
+	// },
+}
+
+func apply_builtin(builtin_symbol string, args interface{}) (interface{}, error) {
+	if builtin_symbol == "print" || builtin_symbol == "println" {
+		return builtin_mapping[builtin_symbol].(func(...interface{}) (int, error))(args)
+	}
+	return 0, nil
+}
+
+//
+// TODO: Define returns for this functions
+// var builtin_mapping = map[string]func(interface{}){ //This implementation will require all arguments to be stored in an array
+// 	// Can add additional typechecks for specific built-in functions
+// 	"print": func(args interface{}) {
+// 		fmt.Print(args)
+// 	},
+// 	"println": func(args interface{}) {
+// 		fmt.Println(args)
+// 	},
+// }
+
+// func apply_builtin(builtin_symbol string, args []interface{}) {
+// 	builtin_mapping[builtin_symbol](args)
+// }
+// func builtin_arity(builtin_symbol string) {
+// 	fnType := reflect.TypeOf(builtin_mapping[builtin_symbol])
+// arity:
+// 	fnType.NumIn()
+// }
+
+// machine.Builtin_mapping["println"].(func(...interface{}) (int, error))("Hello")
 // builtin_mapping := {
 //     display       : display,
 //     get_time      : get_time,

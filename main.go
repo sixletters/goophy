@@ -7,23 +7,21 @@ import (
 	"cs4215/goophy/pkg/parser"
 	"fmt"
 	"io/ioutil"
-	"os"
 	"os/user"
 )
 
 func main() {
-
 	_, err := user.Current()
 	if err != nil {
 		panic(err)
 	}
-
-	if len(os.Args) < 2 {
-		panic("There is no input file name given")
-	}
-	fileName := os.Args[1]
-	fmt.Println(fileName)
-	data, err := ioutil.ReadFile("/Users/harrismaung/Desktop/mylearning/goophy/test.txt")
+	// machine.Builtin_mapping["print"]("Hello")
+	// if len(os.Args) < 2 {
+	// 	panic("There is no input file name given")
+	// }
+	// fileName := os.Args[1]
+	// fmt.Println(fileName)
+	data, err := ioutil.ReadFile("./test.txt")
 	if err != nil {
 		fmt.Println("File reading error", err)
 		return
@@ -34,7 +32,8 @@ func main() {
 	program := p.ParseProgram()
 	instrs := compiler.Compile(*program)
 	machine := machine.NewMachine().Init()
-	res := machine.Run(instrs)
-	fmt.Println(res)
+	machine.Run(instrs)
+	// fmt.Println(res)
 	//repl.Start(os.Stdin, os.Stdout)
+
 }
