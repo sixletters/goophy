@@ -217,20 +217,8 @@ func (m *Machine) Init() *Machine {
 				if ok != nil {
 					m.OS.Push(result)
 				}
-
+				return
 			}
-			// Assume there are no built-ins for our vm first
-			// if sf.tag == "BUILTIN" {
-			// 	PC++
-			// 	push(OS, apply_builtin(sf.sym, args))
-			// 	return
-			// }
-			// function, found := m.E.Get("print")
-			// if found {
-			// 	m.PC++
-			// 	function.(func(interface{}))("hello")
-			// }
-
 		},
 		"TAIL_CALL": func(instr compiler.Instruction) {
 			tailcallInstr, ok := instr.(compiler.TAILCALLInstruction)
@@ -242,18 +230,26 @@ func (m *Machine) Init() *Machine {
 			for i := arity - 1; i >= 0; i-- {
 				args[i] = m.OS.Pop()
 			}
-			sf := m.OS.Pop().(*closure)
-			//Assume no built in
-			// if sf.tag == "BUILTIN" {
-			// 	PC++
-			// 	// push(OS, apply_builtin(sf.sym, args))
-			// 	return
-			// }
-			m.E.Extend()
-			for index, val := range sf.prms {
-				m.E.Set(val, args[index])
+			sf := m.OS.Pop() //Can either be closure or builtin
+			sf_closure, ok := sf.(closure)
+			if ok {
+				m.E.Extend()
+				for index, val := range sf_closure.prms {
+					m.E.Set(val, args[index])
+				}
+				m.PC = sf_closure.addr
+				return
 			}
-			m.PC = sf.addr
+			sf_builtin, ok := sf.(builtinType)
+			if ok {
+				m.PC++
+				result, ok := apply_builtin(sf_builtin.sym, args)
+				if ok != nil {
+					m.OS.Push(result)
+				}
+				return
+			}
+
 		},
 		"RESET": func(instr compiler.Instruction) {
 			top_frame, ok := m.RTS.Pop().(stackFrame)

@@ -19,7 +19,7 @@ func apply_builtin(builtin_symbol string, args interface{}) (interface{}, error)
 	return 0, nil
 }
 
-//
+// Avoid wrapping functions so that the output behaviour can be preserved.
 // TODO: Define returns for this functions
 // var builtin_mapping = map[string]func(interface{}){ //This implementation will require all arguments to be stored in an array
 // 	// Can add additional typechecks for specific built-in functions
