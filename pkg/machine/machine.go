@@ -7,6 +7,9 @@ package machine
 // "cs4215/goophy/pkg/environment"
 import (
 	"cs4215/goophy/pkg/compiler"
+	"cs4215/goophy/pkg/environment"
+	"cs4215/goophy/pkg/scheduler"
+	"cs4215/goophy/pkg/util"
 	"fmt"
 	"reflect"
 )
@@ -23,9 +26,10 @@ import (
 // var PC int
 
 type Machine struct {
-	OS        Stack
-	RTS       Stack
-	E         *Environment
+	Rrs       *scheduler.RoundRobinScheduler
+	OS        util.Stack
+	RTS       util.Stack
+	E         *environment.Environment
 	PC        int
 	microcode map[string]func(instr compiler.Instruction)
 }
@@ -35,7 +39,7 @@ type closure struct {
 	tag  string
 	prms []string //an array of symbols
 	addr int
-	env  *Environment
+	env  *environment.Environment
 }
 type builtinType struct {
 	tag   string
@@ -44,7 +48,7 @@ type builtinType struct {
 }
 
 func NewMachine() *Machine {
-	global_environment := NewEnvironment() //TODO: Populate global environment with all built-ins
+	global_environment := environment.NewEnvironment() //TODO: Populate global environment with all built-ins
 	for key, fn := range builtin_mapping {
 		fnType := reflect.TypeOf(fn)
 		value := builtinType{
@@ -59,14 +63,22 @@ func NewMachine() *Machine {
 	// fmt.Print(global_environment)
 	global_environment.Extend() //Redundant?
 	return &Machine{
-		OS:  Stack{},
+		Rrs: scheduler.NewRoundRobinScheduler(),
+		OS:  util.Stack{},
 		PC:  0,
 		E:   global_environment,
-		RTS: Stack{},
+		RTS: util.Stack{},
 	}
 }
 
 func (m *Machine) Init() *Machine {
+	mainThread := scheduler.Thread{
+		Os:  m.OS,
+		Env: m.E,
+		Rts: m.RTS,
+		Pc:  m.PC,
+	}
+	m.Rrs.NewThread(mainThread)
 	m.microcode = map[string]func(instr compiler.Instruction){
 		"LDCN": func(instr compiler.Instruction) {
 			ldcnInstr, ok := instr.(compiler.LDCNInstruction)
@@ -136,7 +148,7 @@ func (m *Machine) Init() *Machine {
 			locals := enterscopeInstr.GetSyms()
 			m.E = m.E.Extend()
 			for _, i := range locals {
-				m.E.Set(i, unassigned)
+				m.E.Set(i, environment.Unassigned)
 			}
 			// unassigneds := make([]interface{}, len(locals)) //TODO: Change the type to String?
 			// for i := range unassigneds {
@@ -322,11 +334,47 @@ func (m *Machine) Init() *Machine {
 // TODO: Check allowable types for return
 // func run(instrs) interface{} {
 func (m *Machine) Run(instrs []compiler.Instruction) interface{} {
-	for instrs[m.PC].GetTag() != "DONE" {
-		// fmt.Println(instrs[m.PC])
-		m.microcode[instrs[m.PC].GetTag()](instrs[m.PC])
+	for len(m.Rrs.GetCurrentThreads()) != 0 {
+		count := 0
+		m.contextSwitch()
+		for instrs[m.PC].GetTag() != "DONE" {
+			// fmt.Println(instrs[m.PC])
+			count += 1
+			m.microcode[instrs[m.PC].GetTag()](instrs[m.PC])
+			// When the thread is done.
+			if instrs[m.PC].GetTag() == "RESET" && m.RTS.Size() == 0 {
+				m.Rrs.DeleteThread()
+				break
+			}
+
+			// context switch
+			if count > 2 {
+				m.saveContext()
+				break
+			}
+		}
+
 	}
 	return m.OS.Peek()
+}
+
+func (m *Machine) contextSwitch() {
+	threadId, _ := m.Rrs.GetNextThread()
+	m.OS = m.Rrs.ThreadTable[threadId].Os
+	m.RTS = m.Rrs.ThreadTable[threadId].Rts
+	m.E = m.Rrs.ThreadTable[threadId].Env
+	m.PC = m.Rrs.ThreadTable[threadId].Pc
+}
+
+func (m *Machine) saveContext() {
+	m.Rrs.AddThread(
+		scheduler.Thread{
+			Os:  m.OS,
+			Env: m.E,
+			Pc:  m.PC,
+			Rts: m.RTS,
+		},
+	)
 }
 
 // Helper for dynamically checking truthy in interface types

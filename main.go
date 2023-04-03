@@ -7,6 +7,7 @@ import (
 	"cs4215/goophy/pkg/parser"
 	"fmt"
 	"io/ioutil"
+	"os"
 	"os/user"
 )
 
@@ -15,13 +16,11 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	// machine.Builtin_mapping["print"]("Hello")
-	// if len(os.Args) < 2 {
-	// 	panic("There is no input file name given")
-	// }
-	// fileName := os.Args[1]
-	// fmt.Println(fileName)
-	data, err := ioutil.ReadFile("./test.txt")
+	if len(os.Args) < 2 {
+		panic("There is no input file name given")
+	}
+	fileName := os.Args[1]
+	data, err := ioutil.ReadFile(fileName)
 	if err != nil {
 		fmt.Println("File reading error", err)
 		return

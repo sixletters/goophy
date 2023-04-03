@@ -1,52 +1,41 @@
 package environment
 
-type StackFrame struct {
-	vars map[string]interface{}
+// Environment is a linked list of environments
+type Environment struct {
+	values map[string]interface{}
+	parent *Environment
 }
 
-func NewStackFrame() *StackFrame {
-	return &StackFrame{vars: make(map[string]interface{})}
+// NewEnvironment creates a new environment with an empty values map
+func NewEnvironment() *Environment {
+	return &Environment{values: make(map[string]interface{}), parent: nil}
 }
 
-func (sf *StackFrame) setVar(varName string, value interface{}) {
-	sf.vars[varName] = value
+// Extend creates a new child environment for the current environment
+func (env *Environment) Extend() *Environment {
+	child := &Environment{values: make(map[string]interface{}), parent: env}
+	return child
 }
 
-func (sf *StackFrame) getVar(varName string) (interface{}, bool) {
-	value, ok := sf.vars[varName]
-	return value, ok
+// Set sets the value of a variable in the current environment
+func (env *Environment) Set(name string, value interface{}) {
+	env.values[name] = value
 }
 
-type EnvironmentStack struct {
-	stackFrames []StackFrame
-}
-
-func NewEnvironmentStack() *EnvironmentStack {
-	firstFrame := make([]StackFrame, 0)
-	return &EnvironmentStack{
-		stackFrames: firstFrame,
+// Get returns the value of a variable in the current environment or its parent environments
+func (env *Environment) Get(name string) (interface{}, bool) {
+	value, ok := env.values[name]
+	if ok {
+		return value, true
+	} else if env.parent != nil {
+		return env.parent.Get(name)
+	} else {
+		return nil, false
 	}
 }
 
-func (env *EnvironmentStack) Extend() {
-	env.stackFrames = append(env.stackFrames, *NewStackFrame())
-}
-
-func (env *EnvironmentStack) Pop() {
-	env.stackFrames = env.stackFrames[:len(env.stackFrames)-1]
-}
-
-func (env *EnvironmentStack) Set(varName string, value interface{}) {
-	stackFrame := env.stackFrames[len(env.stackFrames)-1]
-	stackFrame.setVar(varName, value)
-}
-
-func (env *EnvironmentStack) Get(varName string) (interface{}, bool) {
-	for i := len(env.stackFrames) - 1; i >= 0; i-- {
-		if val, ok := env.stackFrames[i].getVar(varName); ok {
-			return val, true
-		}
-
-	}
-	return nil, false
+var Unassigned = struct {
+	tag string
+}{
+	tag: "unassigned",
 }

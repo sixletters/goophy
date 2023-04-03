@@ -10,4 +10,4 @@ if (z == 5){
     }
 }
 z;
-println(2+3);
+println(z);

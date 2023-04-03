@@ -13,6 +13,9 @@ var builtin_mapping = map[string]func(args []interface{}) ([]interface{}, error)
 		fmt.Println(args[0])
 		return nil, nil
 	},
+	// "goophy": func(args []interface{}) ([]interface{}, error) {
+
+	// },
 	// "println": func(arg []interface{}) {
 	// 	fmt.Println(arg)
 	// },

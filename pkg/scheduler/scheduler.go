@@ -1,54 +1,65 @@
 package scheduler
 
+import (
+	"errors"
+)
+
 type Scheduler interface {
 	NumCurrent() int
 	GetCurrentThreads() []ThreadID
-	NumIdle() int
-	GetIdleThreads() []ThreadID
 	NewThread() ThreadID
 	DeleteThread(id ThreadID) bool
-	GetRunThread() (ThreadID, int, error)
-	PauseThread(id ThreadID) bool
+	GetNextThread() (ThreadID, error)
 }
 
 type RoundRobinScheduler struct {
-	currentThreads map[ThreadID]bool
-	idleThreads    []ThreadID
-	maxThreadID    int
-	maxTimeQuanta  int
+	threadQueue  []ThreadID
+	currThreadID ThreadID
+	ThreadTable  map[ThreadID]Thread
 }
 
-func (r *RoundRobinScheduler) NumCurrent() int {
-	return len(r.currentThreads)
-}
-
-func (r *RoundRobinScheduler) GetCurrentThreads() []ThreadID {
-	ret := make([]ThreadID, 0)
-	for k, v := range r.currentThreads {
-
+func NewRoundRobinScheduler() *RoundRobinScheduler {
+	return &RoundRobinScheduler{
+		threadQueue: make([]ThreadID, 0),
+		ThreadTable: make(map[ThreadID]Thread),
 	}
 }
 
-func (r *RoundRobinScheduler) NumIdle() int {
+func (r *RoundRobinScheduler) NumCurrent() int {
+	return len(r.threadQueue)
+}
+
+func (r *RoundRobinScheduler) GetCurrentThreads() []ThreadID {
+	return r.threadQueue
+}
+
+func (r *RoundRobinScheduler) NewThread(thread Thread) ThreadID {
+	curr := r.currThreadID
+	r.threadQueue = append(r.threadQueue, curr)
+	r.currThreadID += 1
+	return curr
+}
+
+func (r *RoundRobinScheduler) DeleteThread() {
 
 }
 
-func (r *RoundRobinScheduler) GetIdleThreads() []ThreadID {
-
+func (r *RoundRobinScheduler) AddThread(thread Thread) {
+	r.threadQueue = append(r.threadQueue, r.currThreadID)
+	r.ThreadTable[r.currThreadID] = thread
+	r.currThreadID += 1
+	return
 }
 
-func (r *RoundRobinScheduler) NewThread() ThreadID {
-
-}
-
-func (r *RoundRobinScheduler) DeleteThread(id ThreadID) bool {
-
-}
-
-func (r *RoundRobinScheduler) GetRunThread() (ThreadID, int, error) {
-
-}
-
-func (r *RoundRobinScheduler) PauseThread(id ThreadID) (ThreadID, int, error) {
-
+func (r *RoundRobinScheduler) GetNextThread() (ThreadID, error) {
+	if len(r.threadQueue) == 0 {
+		return 0, errors.New("NO more threads")
+	}
+	r.currThreadID = r.threadQueue[0]
+	if len(r.threadQueue) > 1 {
+		r.threadQueue = r.threadQueue[1:]
+	} else {
+		r.threadQueue = []ThreadID{}
+	}
+	return r.currThreadID, nil
 }
