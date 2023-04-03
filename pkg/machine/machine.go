@@ -213,7 +213,7 @@ func (m *Machine) Init() *Machine {
 			sf_builtin, ok := sf.(builtinType)
 			if ok {
 				m.PC++
-				result, ok := apply_builtin(sf_builtin.sym, args)
+				result, ok := builtin_mapping[sf_builtin.sym](args)
 				if ok != nil {
 					m.OS.Push(result)
 				}
@@ -243,7 +243,7 @@ func (m *Machine) Init() *Machine {
 			sf_builtin, ok := sf.(builtinType)
 			if ok {
 				m.PC++
-				result, ok := apply_builtin(sf_builtin.sym, args)
+				result, ok := builtin_mapping[sf_builtin.sym](args)
 				if ok != nil {
 					m.OS.Push(result)
 				}

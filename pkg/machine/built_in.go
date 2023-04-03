@@ -4,19 +4,18 @@ import (
 	"fmt"
 )
 
-var builtin_mapping = map[string]interface{}{
-	"print":   fmt.Print,
-	"println": fmt.Println,
+var builtin_mapping = map[string]func(args []interface{}) ([]interface{}, error){
+	"print": func(args []interface{}) ([]interface{}, error) {
+		fmt.Print(args[0])
+		return nil, nil
+	},
+	"println": func(args []interface{}) ([]interface{}, error) {
+		fmt.Println(args[0])
+		return nil, nil
+	},
 	// "println": func(arg []interface{}) {
 	// 	fmt.Println(arg)
 	// },
-}
-
-func apply_builtin(builtin_symbol string, args interface{}) (interface{}, error) {
-	if builtin_symbol == "print" || builtin_symbol == "println" {
-		return builtin_mapping[builtin_symbol].(func(...interface{}) (int, error))(args)
-	}
-	return 0, nil
 }
 
 // Avoid wrapping functions so that the output behaviour can be preserved.
