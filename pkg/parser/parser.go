@@ -146,6 +146,8 @@ func (p *Parser) parseStatement() ast.Statement {
 		return p.parseLetStatement()
 	case token.RETURN:
 		return p.parseReturnStatement()
+	case token.GO:
+		return p.parseGoStatement()
 	default:
 		return p.parseExpressionStatement()
 	}
@@ -172,6 +174,17 @@ func (p *Parser) parseLetStatement() *ast.LetStatement {
 		p.nextToken()
 	}
 
+	return stmt
+}
+
+func (p *Parser) parseGoStatement() *ast.GoStatement {
+	stmt := &ast.GoStatement{Token: p.curToken}
+	p.nextToken()
+	functionCall, ok := p.parseExpression(LOWEST).(*ast.CallExpression)
+	if !ok {
+		return nil
+	}
+	stmt.FunctionCall = functionCall
 	return stmt
 }
 

@@ -28,6 +28,7 @@ const (
 	// Identifiers + literals
 	IDENT TokenType = "IDENT"
 	INT   TokenType = "INT"
+	GO    TokenType = "GO"
 
 	// Operators
 	ASSIGN   TokenType = "="

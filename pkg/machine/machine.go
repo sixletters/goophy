@@ -26,12 +26,13 @@ import (
 // var PC int
 
 type Machine struct {
-	Rrs       *scheduler.RoundRobinScheduler
-	OS        util.Stack
-	RTS       util.Stack
-	E         *environment.Environment
-	PC        int
-	microcode map[string]func(instr compiler.Instruction)
+	Rrs         *scheduler.RoundRobinScheduler
+	OS          util.Stack
+	RTS         util.Stack
+	E           *environment.Environment
+	spawnThread bool
+	PC          int
+	microcode   map[string]func(instr compiler.Instruction)
 }
 
 // Closures to wait for compiler
@@ -45,6 +46,11 @@ type builtinType struct {
 	tag   string
 	sym   string
 	arity int
+}
+
+type GOInstruction struct {
+	Tag  string
+	Addr int
 }
 
 func NewMachine() *Machine {
@@ -219,6 +225,17 @@ func (m *Machine) Init() *Machine {
 				for index, val := range sf_closure.prms {
 					m.E.Set(val, args[index])
 				}
+				if m.spawnThread {
+					m.Rrs.AddThread(
+						scheduler.Thread{
+							Env: m.E,
+							Rts: util.Stack{},
+							Pc:  sf_closure.addr,
+							Os:  util.Stack{},
+						},
+					)
+					m.spawnThread = false
+				}
 				m.PC = sf_closure.addr
 				return
 			}
@@ -273,63 +290,12 @@ func (m *Machine) Init() *Machine {
 				m.E = top_frame.E
 			}
 		},
+		"GO": func(instr compiler.Instruction) {
+			m.spawnThread = true
+		},
 	}
 	return m
 }
-
-// "LD": func(instr *compiler.Instruction) {
-//     PC++
-// 	OS.Push(lookup(instr.sym, E))
-// },
-// "CALL": func(instr *compiler.Instruction) {
-//     arity := instr.arity
-//     args := make([]interface{}, arity)
-//     for i := arity - 1; i >= 0; i-- {
-//         args[i] = OS.Pop()
-//     }
-//     sf := OS.pop().(*closure)
-//     if sf.tag == "BUILTIN" {
-//         PC++
-//         push(OS, apply_builtin(sf.sym, args))
-//         return
-//     }
-//     RTS.push(&frame{tag: "CALL_FRAME", addr: PC + 1, env: E})
-//     E = extend(sf.prms, args, sf.env)
-//     PC = sf.addr
-// },
-// "TAIL_CALL": func(instr *compiler.Instruction) {
-//     arity := instr.arity
-//     args := make([]interface{}, arity)
-//     for i := arity - 1; i >= 0; i-- {
-//         args[i] = OS.pop()
-//     }
-//     sf := OS.pop().(*closure)
-//     if sf.tag == "BUILTIN" {
-//         PC++
-//         push(OS, apply_builtin(sf.sym, args))
-//         return
-//     }
-//     E = extend(sf.prms, args, sf.env)
-//     PC = sf.addr
-// },
-// "RESET": func(instr *compiler.Instruction) {
-//     for {
-//         top_frame := RTS.pop()
-//         if top_frame.tag == "CALL_FRAME" {
-//             PC = top_frame.addr
-//             E = top_frame.env
-//             break
-//         }
-//     }
-// },
-// }
-
-//TODO: Finalize struct for instruction
-// type compiler.Instruction struct{
-// 	tag string
-// 	val interface{}
-// 	// sym string
-// }
 
 // TODO: Check allowable types for return
 // func run(instrs) interface{} {
