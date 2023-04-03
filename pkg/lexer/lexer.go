@@ -118,7 +118,7 @@ func isLetter(ch byte) bool {
 }
 
 func isLetterOrUnderscore(ch byte) bool {
-	return 'a' <= ch && ch <= 'z' || 'A' <= ch && ch <= 'Z' || ch == '_'
+	return 'a' <= ch && ch <= 'z' || 'A' <= ch && ch <= 'Z' || ch == '_' || isDigit(ch)
 }
 
 func isDigit(ch byte) bool {

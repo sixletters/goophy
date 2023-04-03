@@ -2,7 +2,6 @@ package compiler
 
 import (
 	"cs4215/goophy/pkg/ast"
-	"fmt"
 	"strconv"
 )
 
@@ -32,6 +31,12 @@ func Compile_statement(statement ast.Statement, instrs []Instruction) []Instruct
 		wc += 1
 		assignInstruction := ASSIGNInstruction{Tag: "ASSIGN", Sym: assignStatement.Name.Value}
 		instrs = append(instrs, assignInstruction)
+	case "GO":
+		goStatement := statement.(*ast.GoStatement)
+		newInstrs := Compile_expression(goStatement.FunctionCall, instrs)
+		instrs = append(instrs, GOInstruction{Tag: "GO"})
+		instrs = append(instrs, newInstrs...)
+		wc += 1
 	case "RETURN":
 		returnStatement := statement.(*ast.ReturnStatement)
 		newInstrs := Compile_expression(returnStatement.ReturnValue, instrs)
@@ -52,7 +57,6 @@ func Compile_statement(statement ast.Statement, instrs []Instruction) []Instruct
 		enterScopeInstruction := ENTERSCOPEInstruction{Tag: "ENTER_SCOPE", Syms: locals}
 		instrs = append(instrs, enterScopeInstruction)
 		for _, statement := range blkStatement.Statements {
-			fmt.Print(statement)
 			// fmt.Println(len(blkStatement.Statements))
 			newInstrs := Compile_statement(statement, []Instruction{})
 			instrs = append(instrs, newInstrs...)

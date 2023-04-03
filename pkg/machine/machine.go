@@ -66,14 +66,14 @@ func NewMachine() *Machine {
 	}
 	// fmt.Println(global_environment.Get("print"))
 	// apply_builtin("print", "1+2")
-	// fmt.Print(global_environment)
 	global_environment.Extend() //Redundant?
 	return &Machine{
-		Rrs: scheduler.NewRoundRobinScheduler(),
-		OS:  util.Stack{},
-		PC:  0,
-		E:   global_environment,
-		RTS: util.Stack{},
+		Rrs:         scheduler.NewRoundRobinScheduler(),
+		OS:          util.Stack{},
+		PC:          0,
+		E:           global_environment,
+		RTS:         util.Stack{},
+		spawnThread: false,
 	}
 }
 
@@ -235,6 +235,10 @@ func (m *Machine) Init() *Machine {
 						},
 					)
 					m.spawnThread = false
+					sf := m.RTS.Pop().(stackFrame)
+					m.PC = sf.PC
+					m.E = sf.E
+					return
 				}
 				m.PC = sf_closure.addr
 				return
@@ -245,6 +249,9 @@ func (m *Machine) Init() *Machine {
 				result, ok := builtin_mapping[sf_builtin.sym](args)
 				if ok != nil {
 					m.OS.Push(result)
+				}
+				if m.spawnThread {
+					m.spawnThread = false
 				}
 				return
 			}
@@ -292,6 +299,7 @@ func (m *Machine) Init() *Machine {
 		},
 		"GO": func(instr compiler.Instruction) {
 			m.spawnThread = true
+			m.PC += 1
 		},
 	}
 	return m
@@ -309,12 +317,12 @@ func (m *Machine) Run(instrs []compiler.Instruction) interface{} {
 			m.microcode[instrs[m.PC].GetTag()](instrs[m.PC])
 			// When the thread is done.
 			if instrs[m.PC].GetTag() == "RESET" && m.RTS.Size() == 0 {
-				m.Rrs.DeleteThread()
 				break
 			}
 
 			// context switch
-			if count > 2 {
+			if count > 1 {
+				// fmt.Print(m.E.Get("print"))
 				m.saveContext()
 				break
 			}

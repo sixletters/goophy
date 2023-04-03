@@ -229,3 +229,11 @@ type RESETInstruction struct {
 func (reset RESETInstruction) GetTag() string {
 	return reset.Tag
 }
+
+type GOInstruction struct {
+	Tag string
+}
+
+func (g GOInstruction) GetTag() string {
+	return g.Tag
+}

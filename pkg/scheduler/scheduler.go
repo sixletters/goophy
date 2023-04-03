@@ -35,6 +35,7 @@ func (r *RoundRobinScheduler) GetCurrentThreads() []ThreadID {
 
 func (r *RoundRobinScheduler) NewThread(thread Thread) ThreadID {
 	curr := r.currThreadID
+	r.ThreadTable[curr] = thread
 	r.threadQueue = append(r.threadQueue, curr)
 	r.currThreadID += 1
 	return curr
