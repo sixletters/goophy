@@ -20,6 +20,7 @@ func runGo(this js.Value, args []js.Value) interface{} {
 	p := parser.New(l)
 	program := p.ParseProgram()
 	instrs := compiler.Compile(*program)
+	machine := machine.NewMachine().Init()
 	res := machine.Run(instrs)
 	return res
 }
