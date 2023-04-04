@@ -116,10 +116,22 @@ func (c *Compiler) Compile_expression(expression ast.Expression, instrs []Instru
 		c.wc += 1
 		ldcnInstruction := LDCNInstruction{Tag: "LDCN", Val: val}
 		instrs = append(instrs, ldcnInstruction)
-	case "+", "*", "/", "<=", ">", "==", "!=", "=": /*tokens have not included modulo*/
+	case "+", "*", "/", "<=", ">", "==", "!=": /*tokens have not included modulo*/
 		expr := expression.(*ast.InfixExpression)
 		newInstrs := c.Compile_expression(expr.Left, []Instruction{})
 		instrs = append(instrs, newInstrs...)
+		newerInstrs := c.Compile_expression(expr.Right, []Instruction{})
+		instrs = append(instrs, newerInstrs...)
+		c.wc += 1
+		binopInstruction := BINOPInstruction{Tag: "BINOP", Sym: BINOPS(token.Literal)}
+		instrs = append(instrs, binopInstruction)
+	case "=":
+		expr := expression.(*ast.InfixExpression)
+		identif := LDIInstruction{
+			Tag: "LDI",
+			Val: expr.Left.String(),
+		}
+		instrs = append(instrs, identif)
 		newerInstrs := c.Compile_expression(expr.Right, []Instruction{})
 		instrs = append(instrs, newerInstrs...)
 		c.wc += 1
