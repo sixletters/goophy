@@ -116,7 +116,7 @@ func (c *Compiler) Compile_expression(expression ast.Expression, instrs []Instru
 		c.wc += 1
 		ldcnInstruction := LDCNInstruction{Tag: "LDCN", Val: val}
 		instrs = append(instrs, ldcnInstruction)
-	case "+", "*", "/", "<=", ">", "==", "!=": /*tokens have not included modulo*/
+	case "+", "*", "/", "<=", ">", "==", "!=", "=": /*tokens have not included modulo*/
 		expr := expression.(*ast.InfixExpression)
 		newInstrs := c.Compile_expression(expr.Left, []Instruction{})
 		instrs = append(instrs, newInstrs...)
