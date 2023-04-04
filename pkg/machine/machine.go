@@ -48,11 +48,6 @@ type builtinType struct {
 	arity int
 }
 
-type GOInstruction struct {
-	Tag  string
-	Addr int
-}
-
 func NewMachine() *Machine {
 	global_environment := environment.NewEnvironment() //TODO: Populate global environment with all built-ins
 	for key, fn := range builtin_mapping {
