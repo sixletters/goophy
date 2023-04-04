@@ -29,7 +29,7 @@ func main() {
 	l := lexer.NewLexer(string(data))
 	p := parser.New(l)
 	program := p.ParseProgram()
-	instrs := compiler.Compile(*program)
+	instrs := compiler.NewCompiler().Compile(*program)
 	machine := machine.NewMachine().Init()
 	machine.Run(instrs)
 	// fmt.Println(res)

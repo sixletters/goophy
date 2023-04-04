@@ -58,20 +58,30 @@ func (c *Compiler) Compile_statement(statement ast.Statement, instrs []Instructi
 		resetInstruction := RESETInstruction{Tag: "RESET"}
 		instrs = append(instrs, resetInstruction)
 	case "{":
-		//block is broken, i not sure how to fix the compile statement step in the loop for statements
 		blkStatement := statement.(*ast.BlockStatement)
 		locals := scan(blkStatement.Statements)
 		c.wc += 1
 		enterScopeInstruction := ENTERSCOPEInstruction{Tag: "ENTER_SCOPE", Syms: locals}
 		instrs = append(instrs, enterScopeInstruction)
 		for _, statement := range blkStatement.Statements {
-			// fmt.Println(len(blkStatement.Statements))
 			newInstrs := c.Compile_statement(statement, []Instruction{})
 			instrs = append(instrs, newInstrs...)
 		}
 		c.wc += 1
 		exitScopeInstruction := EXITSCOPEInstruction{Tag: "EXIT_SCOPE"}
 		instrs = append(instrs, exitScopeInstruction)
+	case "FOR":
+		forStatement := statement.(*ast.ForStatement)
+		c.wc += 1
+		gotoInstruction := GOTOInstruction{Tag: "GOTO", Addr: c.wc}
+		conditionInstrs := c.Compile_expression(forStatement.Condition, []Instruction{})
+		c.wc += 1
+		jofInstruction := JOFInstruction{Tag: "JOF", Addr: c.wc}
+		blockInstrs := c.Compile_statement(forStatement.ForBlock, []Instruction{})
+		instrs = append(instrs, conditionInstrs...)
+		instrs = append(instrs, jofInstruction)
+		instrs = append(instrs, blockInstrs...)
+		instrs = append(instrs, gotoInstruction)
 	default:
 		expressionStatement := statement.(*ast.ExpressionStatement)
 		newInstrs := c.Compile_expression(expressionStatement.Expression, instrs)
