@@ -2,7 +2,6 @@ package compiler
 
 type Instruction interface {
 	GetTag() string
-	// instructionNode()
 }
 
 // LDC ->Boolean
