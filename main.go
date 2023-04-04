@@ -30,6 +30,7 @@ func main() {
 	p := parser.New(l)
 	program := p.ParseProgram()
 	instrs := compiler.NewCompiler().Compile(*program)
+	fmt.Println(instrs)
 	machine := machine.NewMachine().Init()
 	machine.Run(instrs)
 	// fmt.Println(res)

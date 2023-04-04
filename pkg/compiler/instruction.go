@@ -32,6 +32,20 @@ func (ldcn LDCNInstruction) GetValue() int {
 	return ldcn.Val
 }
 
+// LDC ->Integer TODO: Expand to handle other types like float64
+type LDIInstruction struct {
+	Tag string
+	Val string
+}
+
+func (ldci LDIInstruction) GetTag() string {
+	return ldci.Tag
+}
+
+func (ldci LDIInstruction) GetValue() string {
+	return ldci.Val
+}
+
 // LD Symbolic
 type LDSInstruction struct {
 	Tag string
