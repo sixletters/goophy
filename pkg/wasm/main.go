@@ -5,7 +5,6 @@ import (
 	"cs4215/goophy/pkg/lexer"
 	"cs4215/goophy/pkg/machine"
 	"cs4215/goophy/pkg/parser"
-	"fmt"
 	"syscall/js"
 )
 
@@ -21,7 +20,6 @@ func runGo(this js.Value, args []js.Value) interface{} {
 	p := parser.New(l)
 	program := p.ParseProgram()
 	instrs := compiler.NewCompiler().Compile(*program)
-	fmt.Println(instrs)
 	machine := machine.NewMachine().Init()
 	res := machine.Run(instrs)
 	return res
