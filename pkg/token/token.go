@@ -28,6 +28,7 @@ const (
 	// Identifiers + literals
 	IDENT TokenType = "IDENT"
 	INT   TokenType = "INT"
+	STR   TokenType = "STR"
 	GO    TokenType = "GO"
 
 	// Operators
@@ -51,6 +52,7 @@ const (
 
 	// Keywords
 	FUNCTION TokenType = "FUNCTION"
+	FOR      TokenType = "FOR"
 	LET      TokenType = "LET"
 	TRUE     TokenType = "TRUE"
 	FALSE    TokenType = "FALSE"
@@ -71,6 +73,7 @@ var Keywords = map[string]TokenType{
 	"else":   ELSE,
 	"return": RETURN,
 	"go":     GO,
+	"for":    FOR,
 }
 
 func LookUpIdentifier(ident string) TokenType {

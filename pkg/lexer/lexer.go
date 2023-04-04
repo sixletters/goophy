@@ -72,6 +72,10 @@ func (l *Lexer) NextToken() token.Token {
 		tok = token.NewToken(token.RBRACE, l.ch)
 	case 0:
 		tok = token.NewTokenWithStr(token.EOF, "")
+	case '"':
+		l.readChar()
+		literal := l.readStringLiteral()
+		return token.NewTokenWithStr(token.STR, literal)
 	default:
 
 		if isLetter(l.ch) {
@@ -87,6 +91,18 @@ func (l *Lexer) NextToken() token.Token {
 	}
 	l.readChar()
 	return tok
+}
+
+// This function returns a string for a given identifier, it keeps increasing the read position
+// while the char at the current pos is a letter or an underscore.
+func (l *Lexer) readStringLiteral() string {
+	position := l.pos
+	for isLetterOrUnderscore(l.ch) {
+		l.readChar()
+	}
+	endpos := l.pos
+	l.readChar()
+	return l.input[position:endpos]
 }
 
 // This function returns a string for a given identifier, it keeps increasing the read position

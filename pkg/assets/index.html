@@ -65,6 +65,7 @@
         // Add code to run the compiled code and output the result to the iframe
         // This could be accomplished by using an AJAX request to a backend server that compiles and runs the code, and then returns the output to the frontend
         const code = editor.value;
+        let result;
         result = WasmRunGo(code)
         output.open();
         output.writeln('<html><head></head><body>' + result + '</body></html>');

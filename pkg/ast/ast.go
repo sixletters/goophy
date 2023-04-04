@@ -262,3 +262,20 @@ func (gs *GoStatement) String() string {
 	out.WriteString(gs.FunctionCall.String())
 	return out.String()
 }
+
+type ForStatement struct {
+	Token     token.Token
+	Condition Expression
+	ForBlock  *BlockStatement
+}
+
+func (fs *ForStatement) statementNode()        {}
+func (fs *ForStatement) TokenLiteral() string  { return fs.Token.Literal }
+func (fs *ForStatement) GetToken() token.Token { return fs.Token }
+func (fs *ForStatement) String() string {
+	var out bytes.Buffer
+	out.WriteString("for")
+	out.WriteString(fs.Condition.String())
+	out.WriteString(fs.ForBlock.String())
+	return out.String()
+}
