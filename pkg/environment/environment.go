@@ -18,7 +18,17 @@ func (env *Environment) Extend() *Environment {
 }
 
 // Set sets the value of a variable in the current environment
-func (env *Environment) Set(name string, value interface{}) {
+func (env *Environment) Set_assign(name string, value interface{}) {
+	_, ok := env.values[name]
+	if !ok {
+		env.parent.Set_assign(name, value)
+	} else if env.parent != nil {
+		panic("Symbol not found!")
+	}
+	env.values[name] = value
+}
+
+func (env *Environment) Set_declare(name string, value interface{}) {
 	env.values[name] = value
 }
 

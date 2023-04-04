@@ -59,7 +59,7 @@ func NewMachine() *Machine {
 			sym:   key,
 			arity: fnType.NumIn(),
 		}
-		global_environment.Set(key, value)
+		global_environment.Set_declare(key, value)
 	}
 	// fmt.Println(global_environment.Get("print"))
 	// apply_builtin("print", "1+2")
@@ -108,7 +108,7 @@ func (m *Machine) Init() *Machine {
 			if _, ok := m.E.Get(x.(string)); !ok {
 				panic("Symbol not found!")
 			}
-			m.E.Set(x.(string), y)
+			m.E.Set_assign(x.(string), y)
 			return y
 		},
 		"+": func(x, y interface{}) interface{} {
@@ -272,7 +272,7 @@ func (m *Machine) Init() *Machine {
 				panic("instr is not of type ASSIGNInstruction")
 			}
 			m.PC++
-			m.E.Set(assignInstr.GetSym(), m.OS.Peek())
+			m.E.Set_declare(assignInstr.GetSym(), m.OS.Peek())
 			// assign_value(assignInstr.GetSym(), OS.Peek(), &E)
 		},
 		"ENTER_SCOPE": func(instr compiler.Instruction) {
@@ -285,7 +285,7 @@ func (m *Machine) Init() *Machine {
 			locals := enterscopeInstr.GetSyms()
 			m.E = m.E.Extend()
 			for _, i := range locals {
-				m.E.Set(i, environment.Unassigned)
+				m.E.Set_declare(i, environment.Unassigned)
 			}
 			// unassigneds := make([]interface{}, len(locals)) //TODO: Change the type to String?
 			// for i := range unassigneds {
@@ -354,7 +354,7 @@ func (m *Machine) Init() *Machine {
 				m.RTS.Push(stackFrame{tag: "CALL_FRAME", E: m.E, PC: m.PC + 1})
 				m.E.Extend()
 				for index, val := range sf_closure.prms {
-					m.E.Set(val, args[index])
+					m.E.Set_declare(val, args[index])
 				}
 				if m.spawnThread {
 					m.Rrs.NewThread(
@@ -402,7 +402,7 @@ func (m *Machine) Init() *Machine {
 			if ok {
 				m.E.Extend()
 				for index, val := range sf_closure.prms {
-					m.E.Set(val, args[index])
+					m.E.Set_declare(val, args[index])
 				}
 				m.PC = sf_closure.addr
 				return
