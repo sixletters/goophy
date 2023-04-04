@@ -33,6 +33,8 @@ type Machine struct {
 	spawnThread bool
 	PC          int
 	microcode   map[string]func(instr compiler.Instruction)
+	binop       map[string]func(x, y interface{}) interface{}
+	unop        map[string]func(interface{}) interface{}
 }
 
 // Closures to wait for compiler
@@ -80,6 +82,140 @@ func (m *Machine) Init() *Machine {
 		Pc:  m.PC,
 	}
 	m.Rrs.NewThread(mainThread)
+	m.unop = map[string]func(interface{}) interface{}{
+		"-unary": func(x interface{}) interface{} {
+			switch x := x.(type) {
+			case int:
+				return -x
+			case float64:
+				return -x
+			default:
+				return nil // return an error message or value here
+			}
+		},
+		"!": func(x interface{}) interface{} {
+			if ok := isBool(x); ok {
+				return !x.(bool)
+			}
+			return nil // return an error message or value here
+		},
+	}
+	m.binop = map[string]func(x, y interface{}) interface{}{
+		"=": func(x, y interface{}) interface{} {
+			if _, ok := x.(string); !ok {
+				panic("Symbol is not a string type!")
+			}
+			if _, ok := m.E.Get(x.(string)); !ok {
+				panic("Symbol not found!")
+			}
+			m.E.Set(x.(string), y)
+			return y
+		},
+		"+": func(x, y interface{}) interface{} {
+			if x == nil || y == nil {
+				return nil
+			}
+			if isNumber(x) && isNumber(y) {
+				switch x.(type) {
+				case int:
+					return x.(int) + y.(int)
+				case float64:
+					return x.(float64) + y.(float64)
+				}
+			} else if isString(x) && isString(y) {
+				return x.(string) + y.(string)
+			}
+			return "error: + expects two numbers or two strings, got:" +
+				reflect.TypeOf(x).String() + " and " +
+				reflect.TypeOf(y).String()
+		},
+
+		"*": func(x, y interface{}) interface{} {
+			// return x.(float64) * y.(float64)
+			switch x.(type) {
+			case int:
+				return x.(int) * y.(int)
+			case float64:
+				return x.(float64) * y.(float64)
+			default:
+				panic("invalid type")
+			}
+		},
+		"-": func(x, y interface{}) interface{} {
+			switch x.(type) {
+			case int:
+				return x.(int) - y.(int)
+			case float64:
+				return x.(float64) - y.(float64)
+			default:
+				panic("invalid type")
+			}
+		},
+		"/": func(x, y interface{}) interface{} {
+			switch x.(type) {
+			case int:
+				return x.(int) / y.(int)
+			case float64:
+				return x.(float64) / y.(float64)
+			default:
+				panic("invalid type")
+			}
+		},
+		"%": func(x, y interface{}) interface{} {
+			switch x.(type) {
+			case int:
+				return x.(int) % y.(int)
+			default:
+				panic("invalid type")
+			}
+		},
+		"<": func(x, y interface{}) interface{} {
+			switch x.(type) {
+			case int:
+				return x.(int) < y.(int)
+			case float64:
+				return x.(float64) < y.(float64)
+			default:
+				panic("invalid type")
+			}
+		},
+		"<=": func(x, y interface{}) interface{} {
+			switch x.(type) {
+			case int:
+				return x.(int) <= y.(int)
+			case float64:
+				return x.(float64) <= y.(float64)
+			default:
+				panic("invalid type")
+			}
+		},
+		">=": func(x, y interface{}) interface{} {
+			switch x.(type) {
+			case int:
+				return x.(int) >= y.(int)
+			case float64:
+				return x.(float64) >= y.(float64)
+			default:
+				panic("invalid type")
+			}
+		},
+		">": func(x, y interface{}) interface{} {
+			switch x.(type) {
+			case int:
+				return x.(int) > y.(int)
+			case float64:
+				return x.(float64) > y.(float64)
+			default:
+				panic("invalid type")
+			}
+		},
+		"==": func(x, y interface{}) interface{} {
+			return x == y
+		},
+		"!=": func(x, y interface{}) interface{} {
+			return x != y
+		},
+	}
 	m.microcode = map[string]func(instr compiler.Instruction){
 		"LDCN": func(instr compiler.Instruction) {
 			ldcnInstr, ok := instr.(compiler.LDCNInstruction)
@@ -103,7 +239,7 @@ func (m *Machine) Init() *Machine {
 				panic("instr is not of type UNOPInstruction")
 			}
 			m.PC++
-			m.OS.Push(apply_unop(string(unopInstr.Sym), m.OS.Pop()))
+			m.OS.Push(m.unop[string(unopInstr.Sym)](m.OS.Pop()))
 		},
 		"BINOP": func(instr compiler.Instruction) {
 			binopInstr, ok := instr.(compiler.BINOPInstruction)
@@ -111,7 +247,7 @@ func (m *Machine) Init() *Machine {
 				panic("instr is not of type BINOPInstruction")
 			}
 			m.PC++
-			m.OS.Push(apply_binop(string(binopInstr.Sym), m.OS.Pop(), m.OS.Pop()))
+			m.OS.Push(m.binop[string(binopInstr.Sym)](m.OS.Pop(), m.OS.Pop()))
 		},
 		"POP": func(instr compiler.Instruction) {
 			m.PC++
