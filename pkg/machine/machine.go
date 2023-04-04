@@ -221,7 +221,7 @@ func (m *Machine) Init() *Machine {
 					m.E.Set(val, args[index])
 				}
 				if m.spawnThread {
-					m.Rrs.AddThread(
+					m.Rrs.NewThread(
 						scheduler.Thread{
 							Env: m.E,
 							Rts: util.Stack{},
@@ -307,14 +307,19 @@ func (m *Machine) Run(instrs []compiler.Instruction) interface{} {
 		count := 0
 		m.contextSwitch()
 		for instrs[m.PC].GetTag() != "DONE" {
-			// fmt.Println(instrs[m.PC])
+			// fmt.Print(m.Rrs.GetCurrentThreads())
+			// fmt.Printf(" %d ", m.Rrs.GetCurrThreadID())
+			// fmt.Print(instrs[m.PC])
+			// fmt.Println("")
 			count += 1
 			m.microcode[instrs[m.PC].GetTag()](instrs[m.PC])
 			// When the thread is done.
 			if instrs[m.PC].GetTag() == "RESET" && m.RTS.Size() == 0 {
 				break
 			}
-
+			if instrs[m.PC].GetTag() == "GO" {
+				count = count - 2
+			}
 			// context switch
 			if count > 1 {
 				// fmt.Print(m.E.Get("print"))

@@ -2,24 +2,17 @@ var x1 = func(){
     println(10);
     println(10);
     println(10);
-    println(10);
-    println(10);
-    println(10);
 }
 var x2 = func(){
     println(5);
     println(5);
     println(5);
-    println(5);
-    println(5);
-    println(5);
 }
 var x3 = func(){
-    println(1);
-    println(1);
-    println(1);
-    println(1);
-    println(1);
+    println(11);
+    println(11);
+    println(11);
 }
 go x1()
 go x2()
+go x3()
