@@ -24,8 +24,9 @@ func (env *Environment) Set_assign(name string, value interface{}) {
 		env.values[name] = value
 		return
 	}
-	if !ok && env.parent != nil {
+	if env.parent != nil {
 		env.parent.Set_assign(name, value)
+		return
 	}
 	panic("Symbol not found!")
 }

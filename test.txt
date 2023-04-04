@@ -1,9 +1,10 @@
-var x = 10;
-var y = 20;
-
-var myfunc = func(x,y){
-   return x + y;
+var func1 = func(){
+    var count = 0
+    if (count != 0){
+        println(3)
+    }
+    println(20)
+    println(10)
 }
-
-x = myfunc(y,x);
-println(x)
+func1()
+println(100)

@@ -170,7 +170,7 @@ func (m *Machine) Init() *Machine {
 				panic("invalid type")
 			}
 		},
-		"<": func(x, y interface{}) interface{} {
+		"<": func(y, x interface{}) interface{} {
 			switch x.(type) {
 			case int:
 				return x.(int) < y.(int)
@@ -180,7 +180,7 @@ func (m *Machine) Init() *Machine {
 				panic("invalid type")
 			}
 		},
-		"<=": func(x, y interface{}) interface{} {
+		"<=": func(y, x interface{}) interface{} {
 			switch x.(type) {
 			case int:
 				return x.(int) <= y.(int)
@@ -190,7 +190,7 @@ func (m *Machine) Init() *Machine {
 				panic("invalid type")
 			}
 		},
-		">=": func(x, y interface{}) interface{} {
+		">=": func(y, x interface{}) interface{} {
 			switch x.(type) {
 			case int:
 				return x.(int) >= y.(int)
@@ -200,9 +200,10 @@ func (m *Machine) Init() *Machine {
 				panic("invalid type")
 			}
 		},
-		">": func(x, y interface{}) interface{} {
+		">": func(y, x interface{}) interface{} {
 			switch x.(type) {
 			case int:
+				fmt.Println(x.(int) > y.(int))
 				return x.(int) > y.(int)
 			case float64:
 				return x.(float64) > y.(float64)

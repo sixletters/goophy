@@ -2,7 +2,6 @@ package compiler
 
 import (
 	"cs4215/goophy/pkg/ast"
-	"fmt"
 	"strconv"
 )
 
@@ -18,9 +17,6 @@ func NewCompiler() *Compiler {
 
 func scan(statements []ast.Statement) []string {
 	var result []string
-	for _, statement := range statements {
-		fmt.Println(statement.String())
-	}
 	for _, statement := range statements {
 		statement, ok := statement.(*ast.LetStatement)
 		if ok {
@@ -45,10 +41,11 @@ func (c *Compiler) Compile_statement(statement ast.Statement, instrs []Instructi
 		instrs = append(instrs, assignInstruction)
 	case "GO":
 		goStatement := statement.(*ast.GoStatement)
-		newInstrs := c.Compile_expression(goStatement.FunctionCall, instrs)
-		instrs = append(instrs, GOInstruction{Tag: "GO"})
-		instrs = append(instrs, newInstrs...)
 		c.wc += 1
+		instrs = append(instrs, GOInstruction{Tag: "GO"})
+
+		newInstrs := c.Compile_expression(goStatement.FunctionCall, []Instruction{})
+		instrs = append(instrs, newInstrs...)
 	case "RETURN":
 		returnStatement := statement.(*ast.ReturnStatement)
 		newInstrs := c.Compile_expression(returnStatement.ReturnValue, instrs)
@@ -79,9 +76,9 @@ func (c *Compiler) Compile_statement(statement ast.Statement, instrs []Instructi
 		c.wc += 1
 		gotoInstruction := GOTOInstruction{Tag: "GOTO", Addr: c.wc}
 		conditionInstrs := c.Compile_expression(forStatement.Condition, []Instruction{})
+		blockInstrs := c.Compile_statement(forStatement.ForBlock, []Instruction{})
 		c.wc += 1
 		jofInstruction := JOFInstruction{Tag: "JOF", Addr: c.wc}
-		blockInstrs := c.Compile_statement(forStatement.ForBlock, []Instruction{})
 		instrs = append(instrs, conditionInstrs...)
 		instrs = append(instrs, jofInstruction)
 		instrs = append(instrs, blockInstrs...)
@@ -120,7 +117,7 @@ func (c *Compiler) Compile_expression(expression ast.Expression, instrs []Instru
 		c.wc += 1
 		ldcnInstruction := LDCNInstruction{Tag: "LDCN", Val: val}
 		instrs = append(instrs, ldcnInstruction)
-	case "+", "*", "/", "<=", ">", "==", "!=": /*tokens have not included modulo*/
+	case "+", "*", "/", "<=", ">", "==", "!=", "<", ">=": /*tokens have not included modulo*/
 		expr := expression.(*ast.InfixExpression)
 		newInstrs := c.Compile_expression(expr.Left, []Instruction{})
 		instrs = append(instrs, newInstrs...)

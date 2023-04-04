@@ -31,6 +31,7 @@ func main() {
 	program := p.ParseProgram()
 	instrs := compiler.NewCompiler().Compile(*program)
 	machine := machine.NewMachine().Init()
+	fmt.Println(instrs)
 	machine.Run(instrs)
 	// fmt.Println(res)
 	//repl.Start(os.Stdin, os.Stdout)
