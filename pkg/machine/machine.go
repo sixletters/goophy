@@ -102,13 +102,14 @@ func (m *Machine) Init() *Machine {
 	}
 	m.binop = map[string]func(x, y interface{}) interface{}{
 		"=": func(x, y interface{}) interface{} {
-			if _, ok := x.(string); !ok {
+			if _, ok := y.(string); !ok {
 				panic("Symbol is not a string type!")
 			}
-			if _, ok := m.E.Get(x.(string)); !ok {
+
+			if _, ok := m.E.Get(y.(string)); !ok {
 				panic("Symbol not found!")
 			}
-			m.E.Set_assign(x.(string), y)
+			m.E.Set_assign(y.(string), x)
 			return y
 		},
 		"+": func(x, y interface{}) interface{} {
@@ -232,6 +233,14 @@ func (m *Machine) Init() *Machine {
 			}
 			m.PC++
 			m.OS.Push(ldcbInstr.Val)
+		},
+		"LDI": func(instr compiler.Instruction) {
+			ldiInstr, ok := instr.(compiler.LDIInstruction)
+			if !ok {
+				panic("instr is not of type LDIInstruction")
+			}
+			m.PC++
+			m.OS.Push(ldiInstr.Val)
 		},
 		"UNOP": func(instr compiler.Instruction) {
 			unopInstr, ok := instr.(compiler.UNOPInstruction)

@@ -20,12 +20,14 @@ func (env *Environment) Extend() *Environment {
 // Set sets the value of a variable in the current environment
 func (env *Environment) Set_assign(name string, value interface{}) {
 	_, ok := env.values[name]
-	if !ok {
-		env.parent.Set_assign(name, value)
-	} else if env.parent != nil {
-		panic("Symbol not found!")
+	if ok {
+		env.values[name] = value
+		return
 	}
-	env.values[name] = value
+	if !ok && env.parent != nil {
+		env.parent.Set_assign(name, value)
+	}
+	panic("Symbol not found!")
 }
 
 func (env *Environment) Set_declare(name string, value interface{}) {
@@ -37,11 +39,13 @@ func (env *Environment) Get(name string) (interface{}, bool) {
 	value, ok := env.values[name]
 	if ok {
 		return value, true
-	} else if env.parent != nil {
-		return env.parent.Get(name)
-	} else {
-		return nil, false
 	}
+
+	if env.parent != nil {
+		return env.parent.Get(name)
+	}
+
+	return nil, false
 }
 
 var Unassigned = struct {

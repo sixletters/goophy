@@ -2,6 +2,7 @@ package compiler
 
 import (
 	"cs4215/goophy/pkg/ast"
+	"fmt"
 	"strconv"
 )
 
@@ -17,6 +18,9 @@ func NewCompiler() *Compiler {
 
 func scan(statements []ast.Statement) []string {
 	var result []string
+	for _, statement := range statements {
+		fmt.Println(statement.String())
+	}
 	for _, statement := range statements {
 		statement, ok := statement.(*ast.LetStatement)
 		if ok {

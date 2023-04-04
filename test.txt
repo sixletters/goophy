@@ -1,2 +1,9 @@
 var x = 10;
-x = 5;
+var y = 20;
+
+var myfunc = func(x,y){
+   return x + y;
+}
+
+x = myfunc(y,x);
+println(x)

@@ -1,0 +1,11 @@
+	let z = 10;
+	let add = fn(x, y) {
+		let z = x + y;
+	   };
+	if(z==10){
+		let z = 20;
+	}
+	let five = 10;
+	let ten =10;
+	let result = add(five, ten);
+	z;

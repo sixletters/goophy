@@ -15,13 +15,13 @@ import (
 const (
 	_ int = iota
 	LOWEST
+	ASSIGN
 	EQUALS      // ==
 	LESSGREATER // > or <
 	SUM         // +
 	PRODUCT     // *
 	PREFIX      // -X or !X
 	CALL        // myFunction(X)
-	ASSIGN
 )
 
 var precedences = map[token.TokenType]int{
