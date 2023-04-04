@@ -467,7 +467,7 @@ func (m *Machine) Run(instrs []compiler.Instruction) interface{} {
 				count = count - 2
 			}
 			// context switch
-			if count > 1 {
+			if count >= 1 {
 				// fmt.Print(m.E.Get("print"))
 				m.saveContext()
 				break

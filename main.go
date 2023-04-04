@@ -31,7 +31,10 @@ func main() {
 	program := p.ParseProgram()
 	instrs := compiler.NewCompiler().Compile(*program)
 	machine := machine.NewMachine().Init()
-	fmt.Println(instrs)
+	// for i, ints := range instrs {
+	// 	fmt.Printf("%d ", i)
+	// 	fmt.Println(ints)
+	// }
 	machine.Run(instrs)
 	// fmt.Println(res)
 	//repl.Start(os.Stdin, os.Stdout)
