@@ -74,11 +74,11 @@ func (c *Compiler) Compile_statement(statement ast.Statement, instrs []Instructi
 	case "FOR":
 		forStatement := statement.(*ast.ForStatement)
 		c.wc += 1
-		gotoInstruction := GOTOInstruction{Tag: "GOTO", Addr: c.wc - 1}
+		gotoInstruction := GOTOInstruction{Tag: "GOTO", Addr: c.wc}
 		conditionInstrs := c.Compile_expression(forStatement.Condition, []Instruction{})
 		blockInstrs := c.Compile_statement(forStatement.ForBlock, []Instruction{})
 		c.wc += 1
-		jofInstruction := JOFInstruction{Tag: "JOF", Addr: c.wc + 2}
+		jofInstruction := JOFInstruction{Tag: "JOF", Addr: c.wc + 1}
 		instrs = append(instrs, conditionInstrs...)
 		instrs = append(instrs, jofInstruction)
 		instrs = append(instrs, blockInstrs...)
@@ -190,23 +190,27 @@ func (c *Compiler) Compile_expression(expression ast.Expression, instrs []Instru
 		instrs = append(instrs, callInstruction)
 	case "IF":
 		ifExpression := expression.(*ast.IfExpression)
-		condInstrs := c.Compile_expression(ifExpression.Condition, []Instruction{})
-		instrs = append(instrs, condInstrs...)
-		ifBlockInstrs := c.Compile_statement(ifExpression.IfBlock, []Instruction{})
-		c.wc += 1
-		jofInstruction := JOFInstruction{Tag: "JOF", Addr: c.wc + 2}
-		var elseBlockInstrs []Instruction
-		var gotoInstruction GOTOInstruction
 		if ifExpression.ElseBlock != nil {
-			elseBlockInstrs = c.Compile_statement(ifExpression.ElseBlock, []Instruction{})
+			condInstrs := c.Compile_expression(ifExpression.Condition, []Instruction{})
+			instrs = append(instrs, condInstrs...)
+			ifBlockInstrs := c.Compile_statement(ifExpression.IfBlock, []Instruction{})
 			c.wc += 1
-			gotoInstruction = GOTOInstruction{Tag: "GOTO", Addr: c.wc + 1}
-		}
-		instrs = append(instrs, jofInstruction)
-		instrs = append(instrs, ifBlockInstrs...)
-		if ifExpression.ElseBlock != nil {
+			jofInstruction := JOFInstruction{Tag: "JOF", Addr: c.wc + 2}
+			elseBlockInstrs := c.Compile_statement(ifExpression.ElseBlock, []Instruction{})
+			c.wc += 1
+			gotoInstruction := GOTOInstruction{Tag: "GOTO", Addr: c.wc + 1}
+			instrs = append(instrs, jofInstruction)
+			instrs = append(instrs, ifBlockInstrs...)
 			instrs = append(instrs, gotoInstruction)
 			instrs = append(instrs, elseBlockInstrs...)
+		} else {
+			condInstrs := c.Compile_expression(ifExpression.Condition, []Instruction{})
+			instrs = append(instrs, condInstrs...)
+			ifBlockInstrs := c.Compile_statement(ifExpression.IfBlock, []Instruction{})
+			c.wc += 1
+			jofInstruction := JOFInstruction{Tag: "JOF", Addr: c.wc + 1}
+			instrs = append(instrs, jofInstruction)
+			instrs = append(instrs, ifBlockInstrs...)
 		}
 	}
 	return instrs
