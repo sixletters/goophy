@@ -6,13 +6,13 @@ import (
 
 type Scheduler interface {
 	NumCurrent() int
-	GetCurrentThreads() []ThreadID
 	NewThread() ThreadID
 	DeleteThread(id ThreadID) bool
 	GetNextThread() (ThreadID, error)
 }
 
 type RoundRobinScheduler struct {
+	threadChan   chan ThreadID
 	threadQueue  []ThreadID
 	currThreadID ThreadID
 	MaxThreadID  ThreadID
@@ -22,13 +22,14 @@ type RoundRobinScheduler struct {
 func NewRoundRobinScheduler() *RoundRobinScheduler {
 	return &RoundRobinScheduler{
 		threadQueue:  make([]ThreadID, 0),
+		threadChan:   make(chan ThreadID, 100),
 		ThreadTable:  make(map[ThreadID]Thread),
 		currThreadID: -1,
 	}
 }
 
 func (r *RoundRobinScheduler) NumCurrent() int {
-	return len(r.threadQueue)
+	return len(r.threadChan)
 }
 
 func (r *RoundRobinScheduler) GetCurrentThreads() []ThreadID {
@@ -38,17 +39,13 @@ func (r *RoundRobinScheduler) GetCurrentThreads() []ThreadID {
 func (r *RoundRobinScheduler) NewThread(thread Thread) ThreadID {
 	curr := r.MaxThreadID
 	r.ThreadTable[curr] = thread
-	r.threadQueue = append(r.threadQueue, curr)
+	r.threadChan <- curr
 	r.MaxThreadID += 1
 	return curr
 }
 
-func (r *RoundRobinScheduler) DeleteThread() {
-
-}
-
 func (r *RoundRobinScheduler) AddThread(thread Thread) {
-	r.threadQueue = append(r.threadQueue, r.currThreadID)
+	r.threadChan <- r.currThreadID
 	r.ThreadTable[r.currThreadID] = thread
 }
 
@@ -57,14 +54,9 @@ func (r *RoundRobinScheduler) GetCurrThreadID() ThreadID {
 }
 
 func (r *RoundRobinScheduler) GetNextThread() (ThreadID, error) {
-	if len(r.threadQueue) == 0 {
-		return 0, errors.New("No more threads")
+	if len(r.threadChan) == 0 {
+		return 0, errors.New("no more threads")
 	}
-	r.currThreadID = r.threadQueue[0]
-	if len(r.threadQueue) > 1 {
-		r.threadQueue = r.threadQueue[1:]
-	} else {
-		r.threadQueue = []ThreadID{}
-	}
+	r.currThreadID = <-r.threadChan
 	return r.currThreadID, nil
 }

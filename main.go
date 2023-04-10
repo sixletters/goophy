@@ -9,6 +9,7 @@ import (
 	"io/ioutil"
 	"os"
 	"os/user"
+	"strconv"
 )
 
 func main() {
@@ -25,18 +26,19 @@ func main() {
 		fmt.Println("File reading error", err)
 		return
 	}
-
+	numCores := int64(4)
+	if len(os.Args) == 3 {
+		numCores, err = strconv.ParseInt(os.Args[2], 10, 64)
+		if err != nil {
+			panic("Invalid number of cores given")
+		}
+	}
 	l := lexer.NewLexer(string(data))
 	p := parser.New(l)
 	program := p.ParseProgram()
 	instrs := compiler.NewCompiler().Compile(*program)
-	machine := machine.NewMachine().Init()
-	for i, ints := range instrs {
-		fmt.Printf("%d ", i)
-		fmt.Println(ints)
-	}
+	machine := machine.NewMachine().Init().WithCores(int(numCores))
 	machine.Run(instrs)
-	// fmt.Println(res)
 	//repl.Start(os.Stdin, os.Stdout)
 
 }
