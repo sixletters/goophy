@@ -128,6 +128,7 @@ func (c *Compiler) Compile_expression(expression ast.Expression, instrs []Instru
 		instrs = append(instrs, binopInstruction)
 	case "=":
 		expr := expression.(*ast.InfixExpression)
+		c.wc += 1
 		identif := LDIInstruction{
 			Tag: "LDI",
 			Val: expr.Left.String(),
