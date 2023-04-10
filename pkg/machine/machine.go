@@ -12,6 +12,7 @@ import (
 	"cs4215/goophy/pkg/util"
 	"fmt"
 	"reflect"
+	"sync"
 )
 
 // Parser
@@ -29,6 +30,7 @@ type Machine struct {
 	Rrs         *scheduler.RoundRobinScheduler
 	OS          util.Stack
 	RTS         util.Stack
+	NumCores    int
 	E           *environment.Environment
 	spawnThread bool
 	PC          int
@@ -73,7 +75,10 @@ func NewMachine() *Machine {
 		spawnThread: false,
 	}
 }
-
+func (m *Machine) WithCores(numCores int) *Machine {
+	m.NumCores = numCores
+	return m
+}
 func (m *Machine) Init() *Machine {
 	mainThread := scheduler.Thread{
 		Os:  m.OS,
@@ -446,17 +451,12 @@ func (m *Machine) Init() *Machine {
 	return m
 }
 
-// TODO: Check allowable types for return
-// func run(instrs) interface{} {
-func (m *Machine) Run(instrs []compiler.Instruction) interface{} {
-	for len(m.Rrs.GetCurrentThreads()) != 0 {
+func (m *Machine) coreRun(instrs []compiler.Instruction, wg *sync.WaitGroup) interface{} {
+	defer wg.Done()
+	for m.Rrs.NumCurrent() != 0 {
 		count := 0
 		m.contextSwitch()
 		for instrs[m.PC].GetTag() != "DONE" {
-			// fmt.Print(m.Rrs.GetCurrentThreads())
-			// fmt.Printf(" %d ", m.Rrs.GetCurrThreadID())
-			// fmt.Print(instrs[m.PC])
-			// fmt.Println("")
 			count += 1
 			m.microcode[instrs[m.PC].GetTag()](instrs[m.PC])
 			// When the thread is done.
@@ -468,13 +468,23 @@ func (m *Machine) Run(instrs []compiler.Instruction) interface{} {
 			}
 			// context switch
 			if count >= 1 {
-				// fmt.Print(m.E.Get("print"))
 				m.saveContext()
 				break
 			}
 		}
-
 	}
+	return m.OS.Peek()
+}
+
+// TODO: Check allowable types for return
+// func run(instrs) interface{} {
+func (m *Machine) Run(instrs []compiler.Instruction) interface{} {
+	var wg sync.WaitGroup
+	for i := 0; i < m.NumCores; i++ {
+		wg.Add(1)
+		go m.coreRun(instrs, &wg)
+	}
+	wg.Wait()
 	return m.OS.Peek()
 }
 

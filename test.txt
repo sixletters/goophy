@@ -12,13 +12,28 @@ var func2 = func(){
         count = count + 1
     }
 }
-var func3 = func(){
-    var count = 1
-    for (count < 10) {
-        println(count)
-        count = count + 1
-    }
-}
+println(69)
 go func1()
 go func2()
-go func3()
+go func2()
+go func2()
+go func2()
+go func2()
+go func2()
+go func2()
+go func2()
+go func2()
+go func2()
+go func2()
+go func1()
+go func2()
+go func2()
+go func2()
+go func2()
+go func2()
+go func2()
+go func2()
+go func2()
+go func2()
+go func2()
+go func2()
