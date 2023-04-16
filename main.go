@@ -37,6 +37,10 @@ func main() {
 	p := parser.New(l)
 	program := p.ParseProgram()
 	instrs := compiler.NewCompiler().Compile(*program)
+	for i, ints := range instrs {
+		fmt.Printf("%d ", i)
+		fmt.Println(ints)
+	}
 	machine := machine.NewMachine().Init().WithCores(int(numCores))
 	machine.Run(instrs)
 	//repl.Start(os.Stdin, os.Stdout)

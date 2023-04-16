@@ -73,15 +73,15 @@ func (c *Compiler) Compile_statement(statement ast.Statement, instrs []Instructi
 		instrs = append(instrs, exitScopeInstruction)
 	case "FOR":
 		forStatement := statement.(*ast.ForStatement)
-		c.wc += 1
 		gotoInstruction := GOTOInstruction{Tag: "GOTO", Addr: c.wc}
 		conditionInstrs := c.Compile_expression(forStatement.Condition, []Instruction{})
 		blockInstrs := c.Compile_statement(forStatement.ForBlock, []Instruction{})
-		c.wc += 1
-		jofInstruction := JOFInstruction{Tag: "JOF", Addr: c.wc + 1}
+		jofInstruction := JOFInstruction{Tag: "JOF", Addr: c.wc + 2}
 		instrs = append(instrs, conditionInstrs...)
+		c.wc += 1
 		instrs = append(instrs, jofInstruction)
 		instrs = append(instrs, blockInstrs...)
+		c.wc += 1
 		instrs = append(instrs, gotoInstruction)
 	default:
 		expressionStatement := statement.(*ast.ExpressionStatement)
@@ -160,21 +160,21 @@ func (c *Compiler) Compile_expression(expression ast.Expression, instrs []Instru
 		}
 	case "FUNCTION":
 		functionLiteral := expression.(*ast.FunctionLiteral)
-		c.wc += 1
 		parametersToString := []string{}
 		for _, parameter := range functionLiteral.Parameters {
 			parametersToString = append(parametersToString, parameter.Value)
 		}
-		ldfInstruction := LDFInstruction{Tag: "LDF", Prms: parametersToString, Addr: c.wc + 1}
+		ldfInstruction := LDFInstruction{Tag: "LDF", Prms: parametersToString, Addr: c.wc + 2}
+		c.wc += 1
 		instrs = append(instrs, ldfInstruction)
+		c.wc += 1
 		bodyInstrs := c.Compile_statement(functionLiteral.Body, []Instruction{})
 		// WE SKIP an LDC instruction here because only in JS lambda returns undefined
-		c.wc += 1
-		resetInstruction := RESETInstruction{Tag: "RESET"}
-		c.wc += 1
-		gotoInstruction := GOTOInstruction{Tag: "GOTO", Addr: c.wc}
+		gotoInstruction := GOTOInstruction{Tag: "GOTO", Addr: c.wc + 1}
 		instrs = append(instrs, gotoInstruction)
 		instrs = append(instrs, bodyInstrs...)
+		c.wc += 1
+		resetInstruction := RESETInstruction{Tag: "RESET"}
 		instrs = append(instrs, resetInstruction)
 	case "(":
 		callExpression := expression.(*ast.CallExpression)
@@ -195,13 +195,13 @@ func (c *Compiler) Compile_expression(expression ast.Expression, instrs []Instru
 			condInstrs := c.Compile_expression(ifExpression.Condition, []Instruction{})
 			instrs = append(instrs, condInstrs...)
 			ifBlockInstrs := c.Compile_statement(ifExpression.IfBlock, []Instruction{})
-			c.wc += 1
 			jofInstruction := JOFInstruction{Tag: "JOF", Addr: c.wc + 2}
 			elseBlockInstrs := c.Compile_statement(ifExpression.ElseBlock, []Instruction{})
+			gotoInstruction := GOTOInstruction{Tag: "GOTO", Addr: c.wc + 2}
 			c.wc += 1
-			gotoInstruction := GOTOInstruction{Tag: "GOTO", Addr: c.wc + 1}
 			instrs = append(instrs, jofInstruction)
 			instrs = append(instrs, ifBlockInstrs...)
+			c.wc += 1
 			instrs = append(instrs, gotoInstruction)
 			instrs = append(instrs, elseBlockInstrs...)
 		} else {
