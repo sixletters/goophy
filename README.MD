@@ -1,6 +1,6 @@
 # Goophy Language
 
-![Goofy](https://github.com/sixletters/goophy/tree/main/pkg/assets/images/Goofy.png?raw=true)
+![Goophy](https://github.com/sixletters/goophy/tree/main/pkg/assets/images/Goofy.png?raw=true "Goophy title")
 
 Goophy is a programming language written in Go that aims to be a simple language for building concurrent programs.
 
