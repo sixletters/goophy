@@ -8,6 +8,8 @@ Goophy is a programming language written in Go that aims to be a simple language
 
 To install Goophy, you first need to have Go installed on your system. Once you have Go installed, you can clone this repo into your system.
 
+Development requires TinyGo compiler to handle the JS and Wasm calls.
+
 ## Running Goophy natively
 
 To run Goophy locally, you can update the test.txt file with your code and run the following command:
