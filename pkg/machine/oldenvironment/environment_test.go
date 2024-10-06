@@ -70,4 +70,3 @@ func TestPopWhenEmpty(t *testing.T) {
 		t.Errorf("Expected length of environment stack to be 0, but got %d", len(env.envFrames))
 	}
 }
-
