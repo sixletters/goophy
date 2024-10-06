@@ -6,7 +6,6 @@ import (
 	"cs4215/goophy/pkg/machine"
 	"cs4215/goophy/pkg/parser"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"os/user"
 	"strconv"
@@ -21,7 +20,7 @@ func main() {
 		panic("There is no input file name given")
 	}
 	fileName := os.Args[1]
-	data, err := ioutil.ReadFile(fileName)
+	data, err := os.ReadFile(fileName)
 	if err != nil {
 		fmt.Println("File reading error", err)
 		return

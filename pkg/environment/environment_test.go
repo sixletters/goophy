@@ -7,8 +7,8 @@ import (
 func TestEnvironment(t *testing.T) {
 	// create a new environment and set a variable
 	env := NewEnvironment()
-	env.Set("x", 42)
-	env.Set("z", 80)
+	env.Set_assign("x", 42)
+	env.Set_assign("z", 80)
 
 	// check that the variable was set correctly
 	if val, ok := env.Get("x"); !ok || val != 42 {
@@ -20,7 +20,7 @@ func TestEnvironment(t *testing.T) {
 
 	// extend the environment and set a new variable
 	childEnv := env.Extend()
-	childEnv.Set("y", "hello")
+	childEnv.Set_assign("y", "hello")
 
 	// check that both variables are accessible in the child environment
 	if val, ok := childEnv.Get("x"); !ok || val != 42 {
