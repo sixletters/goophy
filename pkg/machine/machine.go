@@ -480,11 +480,15 @@ func (m *Machine) coreRun(instrs []compiler.Instruction, wg *sync.WaitGroup) int
 // func run(instrs) interface{} {
 func (m *Machine) Run(instrs []compiler.Instruction) interface{} {
 	var wg sync.WaitGroup
-	for i := 0; i < m.NumCores; i++ {
-		wg.Add(1)
-		go m.coreRun(instrs, &wg)
-	}
+	wg.Add(1)
+	m.coreRun(instrs, &wg)
 	wg.Wait()
+	// for i := 0; i < m.NumCores; i++ {
+	// 	wg.Add(1)
+	// 	go m.coreRun(instrs, &wg)
+	// }
+	// wg.Wait()
+	fmt.Println(m.OS.Peek())
 	return m.OS.Peek()
 }
 

@@ -6,30 +6,31 @@ import (
 	"cs4215/goophy/pkg/machine"
 	"cs4215/goophy/pkg/parser"
 	"fmt"
-	"unsafe"
+	"syscall/js"
 )
 
-// Exported function to be called from JavaScript
-//
-//export WasmRunGo
-func WasmRunGo(inputPtr *byte, length uint32) *byte {
-	// Convert the memory pointer and length into a Go string
-	inputBytes := unsafe.Slice(inputPtr, length)
-	input := string(inputBytes)
-
-	// Run the compiler process
-	l := lexer.NewLexer(input)
-	p := parser.New(l)
-	program := p.ParseProgram()
-	instrs := compiler.NewCompiler().Compile(*program)
-	mach := machine.NewMachine().Init()
-	res := mach.Run(instrs)
-
-	// Convert the result to a string and return a pointer to it
-	result := []byte(fmt.Sprintf("%v", res))
-	return &result[0]
+func main() {
+	fmt.Println("starting goophy")
+	js.Global().Set("runGoophy", runGoophyFunc())
+	<-make(chan struct{})
 }
 
-func main() {
-	// TinyGo requires a main function, but it's not used when compiling to WASM
+func runGoophyFunc() js.Func {
+	goophyRunFunc := js.FuncOf(func(this js.Value, args []js.Value) any {
+		if len(args) != 1 {
+			return "Invalid no of aruguments passed"
+		}
+		inputCode := args[0].String()
+		l := lexer.NewLexer(inputCode)
+		p := parser.New(l)
+		program := p.ParseProgram()
+		instrs := compiler.NewCompiler().Compile(*program)
+		fmt.Println(instrs)
+		mach := machine.NewMachine().Init()
+		res := mach.Run(instrs)
+		fmt.Println(res)
+		// Convert the result to a string and return a pointer to it
+		return fmt.Sprintf("%v", res)
+	})
+	return goophyRunFunc
 }
